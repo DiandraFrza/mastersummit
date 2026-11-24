@@ -22,4 +22,12 @@ class UserSampleScope extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    /**
+     * Sample station reference.
+     */
+    public function sample(): BelongsTo
+    {
+        return $this->belongsTo(Sample::class);
+    }
 }

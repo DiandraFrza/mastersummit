@@ -1,0 +1,388 @@
+import React, { useState } from 'react';
+import { Head, router, useForm } from '@inertiajs/react';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import DataTable, { ColumnDef } from '@/Components/DataTable';
+import Badge from '@/Components/Badge';
+import ActionDropdown, { ActionDropdownItem } from '@/Components/ActionDropdown';
+import Modal from '@/Components/Modal';
+import {
+    Plus,
+    Pencil,
+    Power,
+    TestTubes,
+    FlaskConical,
+    ScanLine,
+    Activity,
+    HeartPulse,
+    CheckCircle2,
+    XCircle,
+} from 'lucide-react';
+import type { PageProps, Pagination, Sample } from '@/types';
+
+interface SamplesIndexProps extends PageProps {
+    samples: Pagination<Sample>;
+    filters: Record<string, any>;
+}
+
+export default function SamplesIndex({ samples, filters }: SamplesIndexProps) {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingSample, setEditingSample] = useState<Sample | null>(null);
+
+    const { data, setData, post, put, processing, errors, reset, clearErrors } = useForm({
+        code: '',
+        name: '',
+        category: 'lab' as 'lab' | 'radiology' | 'electromedical' | 'physical',
+        sort_order: 0,
+        is_active: true,
+    });
+
+    const openCreateModal = () => {
+        setEditingSample(null);
+        reset();
+        clearErrors();
+        setIsModalOpen(true);
+    };
+
+    const openEditModal = (sample: Sample) => {
+        setEditingSample(sample);
+        clearErrors();
+        setData({
+            code: sample.code,
+            name: sample.name,
+            category: sample.category,
+            sort_order: sample.sort_order || 0,
+            is_active: Boolean(sample.is_active),
+        });
+        setIsModalOpen(true);
+    };
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (editingSample) {
+            put(route('samples.update', editingSample.id), {
+                onSuccess: () => setIsModalOpen(false),
+            });
+        } else {
+            post(route('samples.store'), {
+                onSuccess: () => setIsModalOpen(false),
+            });
+        }
+    };
+
+    const handleToggleStatus = (sample: Sample) => {
+        const action = sample.is_active ? 'menonaktifkan' : 'mengaktifkan';
+        if (confirm(`Apakah Anda yakin ingin ${action} stasiun sampel "${sample.name}"?`)) {
+            router.patch(route('samples.toggle-status', sample.id), {}, { preserveScroll: true });
+        }
+    };
+
+    const handleFilterChange = (key: string, value: string) => {
+        const currentParams = new URLSearchParams(window.location.search);
+        if (!value || value === 'all') {
+            currentParams.delete(key);
+        } else {
+            currentParams.set(key, value);
+        }
+        currentParams.delete('page');
+
+        router.get(route('samples.index'), Object.fromEntries(currentParams), {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        });
+    };
+
+    const categoryBadges: Record<string, { label: string; icon: any; variant: 'info' | 'neutral' | 'warning' | 'success' }> = {
+        lab: { label: 'Laboratorium', icon: FlaskConical, variant: 'info' },
+        radiology: { label: 'Radiologi', icon: ScanLine, variant: 'neutral' },
+        electromedical: { label: 'Elektromedis', icon: Activity, variant: 'warning' },
+        physical: { label: 'Pemeriksaan Fisik', icon: HeartPulse, variant: 'success' },
+    };
+
+    const columns: ColumnDef<Sample>[] = [
+        {
+            header: 'Urutan',
+            accessorKey: 'sort_order',
+            isNumeric: true,
+            sortable: true,
+            width: '80px',
+            align: 'center',
+            cell: ({ value }) => (
+                <span className="font-mono text-zinc-600 font-semibold tabular-nums text-xs">
+                    #{value}
+                </span>
+            ),
+        },
+        {
+            header: 'Stasiun / Spesimen',
+            accessorKey: 'name',
+            sortable: true,
+            cell: ({ row }) => (
+                <div className="flex flex-col">
+                    <span className="font-medium text-zinc-900">{row.name}</span>
+                    <span className="font-mono text-[11px] text-zinc-400 tabular-nums">
+                        {row.code}
+                    </span>
+                </div>
+            ),
+        },
+        {
+            header: 'Kategori Modul',
+            accessorKey: 'category',
+            sortable: true,
+            width: '180px',
+            cell: ({ value }) => {
+                const conf = categoryBadges[value] || { label: value, icon: TestTubes, variant: 'neutral' };
+                return (
+                    <Badge variant={conf.variant} icon={conf.icon}>
+                        {conf.label}
+                    </Badge>
+                );
+            },
+        },
+        {
+            header: 'Status',
+            accessorKey: 'is_active',
+            sortable: true,
+            width: '110px',
+            align: 'center',
+            cell: ({ value }) => (
+                <Badge
+                    variant={value ? 'success' : 'neutral'}
+                    icon={value ? CheckCircle2 : XCircle}
+                >
+                    {value ? 'Aktif' : 'Non-Aktif'}
+                </Badge>
+            ),
+        },
+        {
+            header: 'Aksi',
+            id: 'actions',
+            align: 'right',
+            width: '80px',
+            cell: ({ row }) => {
+                const items: ActionDropdownItem[] = [
+                    {
+                        label: 'Edit Stasiun',
+                        icon: Pencil,
+                        onClick: () => openEditModal(row),
+                    },
+                    {
+                        label: row.is_active ? 'Nonaktifkan' : 'Aktifkan',
+                        icon: Power,
+                        variant: row.is_active ? 'danger' : 'default',
+                        onClick: () => handleToggleStatus(row),
+                    },
+                ];
+
+                return <ActionDropdown items={items} align="right" />;
+            },
+        },
+    ];
+
+    return (
+        <AuthenticatedLayout
+            title="Stasiun Sampel & Spesimen"
+            breadcrumb={[
+                { label: 'Data Master' },
+                { label: 'Stasiun & Sampel' },
+            ]}
+        >
+            <Head title="Master Stasiun & Sampel" />
+
+            <div className="space-y-4">
+                {/* Header Action Bar */}
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white p-4 rounded-md border border-zinc-200/80">
+                    <div>
+                        <h1 className="text-base font-semibold text-zinc-900 flex items-center gap-2">
+                            <TestTubes className="w-5 h-5 text-teal-600" />
+                            <span>Master Stasiun Sampel & Titik Pemeriksaan</span>
+                        </h1>
+                        <p className="text-xs text-zinc-500 mt-0.5">
+                            Konfigurasi stasiun fisik antrean MCU (Darah EDTA, Urin, EKG, Rontgen) dan hak akses operator.
+                        </p>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                        {/* Category Filter Select */}
+                        <select
+                            value={filters.category || 'all'}
+                            onChange={(e) => handleFilterChange('category', e.target.value)}
+                            className="text-xs px-2.5 py-1.5 bg-white border border-zinc-200/80 rounded-md text-zinc-700 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                        >
+                            <option value="all">Semua Kategori</option>
+                            <option value="lab">Laboratorium</option>
+                            <option value="radiology">Radiologi</option>
+                            <option value="electromedical">Elektromedis</option>
+                            <option value="physical">Pemeriksaan Fisik</option>
+                        </select>
+
+                        {/* Status Filter Tab Pills */}
+                        <div className="flex items-center bg-zinc-100 p-0.5 rounded-md border border-zinc-200/80 text-xs">
+                            <button
+                                type="button"
+                                onClick={() => handleFilterChange('status', 'all')}
+                                className={`px-2.5 py-1 rounded font-medium transition-colors ${
+                                    (filters.status || 'all') === 'all'
+                                        ? 'bg-white text-zinc-900 shadow-xs'
+                                        : 'text-zinc-600 hover:text-zinc-900'
+                                }`}
+                            >
+                                Semua
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => handleFilterChange('status', 'active')}
+                                className={`px-2.5 py-1 rounded font-medium transition-colors ${
+                                    filters.status === 'active'
+                                        ? 'bg-white text-emerald-700 shadow-xs'
+                                        : 'text-zinc-600 hover:text-zinc-900'
+                                }`}
+                            >
+                                Aktif
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => handleFilterChange('status', 'inactive')}
+                                className={`px-2.5 py-1 rounded font-medium transition-colors ${
+                                    filters.status === 'inactive'
+                                        ? 'bg-white text-zinc-700 shadow-xs'
+                                        : 'text-zinc-600 hover:text-zinc-900'
+                                }`}
+                            >
+                                Non-Aktif
+                            </button>
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={openCreateModal}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-teal-600 hover:bg-teal-700 active:bg-teal-800 rounded-md transition-colors shadow-xs"
+                        >
+                            <Plus className="w-4 h-4" />
+                            <span>Tambah Stasiun</span>
+                        </button>
+                    </div>
+                </div>
+
+                {/* Standard DataTable */}
+                <DataTable<Sample>
+                    data={samples.data}
+                    columns={columns}
+                    pagination={samples}
+                    searchPlaceholder="Cari kode, nama spesimen atau stasiun..."
+                    currentSearch={filters.search}
+                    currentSort={filters.sort}
+                    currentDirection={filters.direction}
+                    currentPerPage={filters.per_page}
+                />
+            </div>
+
+            {/* Modal Form Tambah / Edit */}
+            <Modal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                title={editingSample ? 'Edit Stasiun Sampel' : 'Tambah Stasiun Sampel Baru'}
+                description="Konfigurasi stasiun pengambilan spesimen dan pemeriksaan antrean."
+                maxWidth="md"
+            >
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                        <label className="block text-xs font-medium text-zinc-700 mb-1">
+                            Kode Stasiun / Spesimen <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            value={data.code}
+                            onChange={(e) => setData('code', e.target.value.toUpperCase())}
+                            placeholder="Contoh: SMP-EDTA, SMP-RO, SMP-EKG"
+                            className="w-full text-xs font-mono uppercase px-3 py-2 bg-white border border-zinc-300 rounded-md focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500"
+                        />
+                        {errors.code && (
+                            <p className="mt-1 text-[11px] text-red-600">{errors.code}</p>
+                        )}
+                    </div>
+
+                    <div>
+                        <label className="block text-xs font-medium text-zinc-700 mb-1">
+                            Nama Stasiun / Spesimen <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            value={data.name}
+                            onChange={(e) => setData('name', e.target.value)}
+                            placeholder="Contoh: Darah EDTA, Rontgen Thorax, Audiometri"
+                            className="w-full text-xs px-3 py-2 bg-white border border-zinc-300 rounded-md focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500"
+                        />
+                        {errors.name && (
+                            <p className="mt-1 text-[11px] text-red-600">{errors.name}</p>
+                        )}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="block text-xs font-medium text-zinc-700 mb-1">
+                                Kategori Modul <span className="text-red-500">*</span>
+                            </label>
+                            <select
+                                value={data.category}
+                                onChange={(e) => setData('category', e.target.value as any)}
+                                className="w-full text-xs px-3 py-2 bg-white border border-zinc-300 rounded-md focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500"
+                            >
+                                <option value="lab">Laboratorium</option>
+                                <option value="radiology">Radiologi</option>
+                                <option value="electromedical">Elektromedis</option>
+                                <option value="physical">Pemeriksaan Fisik</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-medium text-zinc-700 mb-1">
+                                Urutan Tampilan
+                            </label>
+                            <input
+                                type="number"
+                                min="0"
+                                value={data.sort_order}
+                                onChange={(e) => setData('sort_order', parseInt(e.target.value, 10) || 0)}
+                                placeholder="0"
+                                className="w-full text-xs font-mono px-3 py-2 bg-white border border-zinc-300 rounded-md focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 pt-1">
+                        <input
+                            type="checkbox"
+                            id="sample_is_active"
+                            checked={data.is_active}
+                            onChange={(e) => setData('is_active', e.target.checked)}
+                            className="h-4 w-4 rounded border-zinc-300 text-teal-600 focus:ring-teal-500"
+                        />
+                        <label htmlFor="sample_is_active" className="text-xs text-zinc-700 cursor-pointer select-none">
+                            Stasiun Aktif & Muncul pada Modul Ambil Sampel
+                        </label>
+                    </div>
+
+                    <div className="flex items-center justify-end gap-2 pt-3 border-t border-zinc-200">
+                        <button
+                            type="button"
+                            onClick={() => setIsModalOpen(false)}
+                            className="px-3 py-1.5 text-xs font-medium text-zinc-700 bg-white border border-zinc-300 hover:bg-zinc-50 rounded-md transition-colors"
+                        >
+                            Batal
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={processing}
+                            className="px-4 py-1.5 text-xs font-medium text-white bg-teal-600 hover:bg-teal-700 disabled:opacity-50 rounded-md transition-colors shadow-xs"
+                        >
+                            {processing ? 'Menyimpan...' : 'Simpan'}
+                        </button>
+                    </div>
+                </form>
+            </Modal>
+        </AuthenticatedLayout>
+    );
+}

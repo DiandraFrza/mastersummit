@@ -20,6 +20,8 @@ class RolePermissionSeeder extends Seeder
         // 1. Definition of granular permissions grouped by module
         $permissionGroups = [
             'pendaftaran' => [
+                'patients.view' => 'Melihat daftar master pasien',
+                'patients.manage' => 'Menambah & mengubah master pasien',
                 'registrations.view' => 'Melihat daftar pendaftaran pasien',
                 'registrations.create' => 'Membuat pendaftaran pasien baru & APS',
                 'registrations.void' => 'Melakukan pembatalan / void pendaftaran',
@@ -64,6 +66,7 @@ class RolePermissionSeeder extends Seeder
             ],
             'pengaturan' => [
                 'settings.clinic' => 'Mengatur profil klinik, kop surat & watermark',
+                'audit_logs.view' => 'Melihat log aktivitas dan jejak audit sistem',
             ],
         ];
 
@@ -130,6 +133,7 @@ class RolePermissionSeeder extends Seeder
                 'results.view',
                 'reports.revenue',
                 'reports.examinations',
+                'audit_logs.view',
             ],
         ];
 

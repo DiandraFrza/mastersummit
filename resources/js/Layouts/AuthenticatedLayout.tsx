@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, usePage, router } from '@inertiajs/react';
 import {
     Activity,
+    ClipboardCheck,
     LayoutDashboard,
     UserPlus,
     TestTubes,
@@ -24,6 +25,7 @@ import {
     BarChart3,
     FileSpreadsheet,
     Settings2,
+    ShieldAlert,
     Menu,
     X,
     LogOut,
@@ -109,6 +111,12 @@ export default function AuthenticatedLayout({
             title: 'Pendaftaran & Antrean',
             items: [
                 {
+                    name: 'Master Pasien',
+                    href: '/patients',
+                    icon: Users,
+                    permission: 'patients.view',
+                },
+                {
                     name: 'Pendaftaran 1 Pintu',
                     href: '/registrations',
                     icon: UserPlus,
@@ -155,26 +163,32 @@ export default function AuthenticatedLayout({
             title: 'Data Hasil Penunjang',
             items: [
                 {
+                    name: 'Antrean Input Hasil',
+                    href: '/examinations',
+                    icon: ClipboardCheck,
+                    permission: 'results.lab',
+                },
+                {
                     name: 'Laboratorium',
-                    href: '/services/lab',
+                    href: '/examinations?category=lab',
                     icon: FlaskConical,
                     permission: 'results.lab',
                 },
                 {
                     name: 'Radiologi',
-                    href: '/services/radiology',
+                    href: '/examinations?category=radiology',
                     icon: ScanLine,
                     permission: 'results.radiology',
                 },
                 {
                     name: 'Elektromedis (EKG/Spiro)',
-                    href: '/services/electromedical',
+                    href: '/examinations?category=electromedical',
                     icon: Activity,
                     permission: 'results.electromedical',
                 },
                 {
                     name: 'Pemeriksaan Fisik',
-                    href: '/services/physical',
+                    href: '/examinations?category=physical',
                     icon: HeartPulse,
                     permission: 'results.physical',
                 },
@@ -237,6 +251,12 @@ export default function AuthenticatedLayout({
                     icon: Truck,
                     permission: 'vendors.view',
                 },
+                {
+                    name: 'Stasiun & Sampel',
+                    href: '/samples',
+                    icon: TestTubes,
+                    permission: 'samples.view',
+                },
             ],
         },
         {
@@ -264,6 +284,12 @@ export default function AuthenticatedLayout({
                     href: '/settings/clinic',
                     icon: Settings2,
                     permission: 'settings.clinic',
+                },
+                {
+                    name: 'Audit Trail / Log Aktivitas',
+                    href: '/audit-logs',
+                    icon: ShieldAlert,
+                    permission: 'audit_logs.view',
                 },
             ],
         },

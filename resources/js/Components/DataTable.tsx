@@ -26,26 +26,62 @@ export interface ColumnDef<T> {
 }
 
 interface DataTableProps<T> {
-    data: Pagination<T>;
+    data: Pagination<T> | T[];
+    pagination?: Pagination<T>;
     columns: ColumnDef<T>[];
     filters?: Record<string, any>;
     searchPlaceholder?: string;
     filterSlot?: React.ReactNode;
     actionsSlot?: React.ReactNode;
     emptyText?: string;
+    emptyMessage?: string;
     routeName?: string;
+    routeParams?: Record<string, any>;
+    filterable?: boolean;
+    searchable?: boolean;
 }
 
 export default function DataTable<T extends Record<string, any>>({
     data,
+    pagination,
     columns,
     filters = {},
     searchPlaceholder = 'Cari data...',
     filterSlot,
     actionsSlot,
-    emptyText = 'Tidak ada data ditemukan.',
+    emptyText,
+    emptyMessage,
     routeName,
+    routeParams,
+    filterable = true,
+    searchable = true,
 }: DataTableProps<T>) {
+    // Normalize data and pagination
+    const paginationData: Pagination<T> = Array.isArray(data)
+        ? (pagination || {
+            data: data,
+            current_page: 1,
+            last_page: 1,
+            per_page: data.length || 10,
+            total: data.length,
+            from: data.length > 0 ? 1 : 0,
+            to: data.length,
+            links: [],
+        })
+        : (data || {
+            data: [],
+            current_page: 1,
+            last_page: 1,
+            per_page: 10,
+            total: 0,
+            from: 0,
+            to: 0,
+            links: [],
+        });
+
+    const items: T[] = Array.isArray(data) ? data : (data?.data || []);
+    const resolvedEmptyText = emptyMessage || emptyText || 'Tidak ada data ditemukan.';
+
     const [search, setSearch] = useState<string>(filters.search || '');
     const [isPending, startTransition] = useTransition();
     const isFirstMount = useRef(true);
@@ -53,7 +89,7 @@ export default function DataTable<T extends Record<string, any>>({
 
     // Entries selector options per requirements
     const perPageOptions = [10, 20, 50, 100, 300, 500];
-    const isVirtual = (data.per_page || 10) >= 100;
+    const isVirtual = (paginationData.per_page || 10) >= 100;
 
     // Debounced search (300ms)
     useEffect(() => {
@@ -117,7 +153,7 @@ export default function DataTable<T extends Record<string, any>>({
         setSearch('');
         const currentUrl = routeName ? route(routeName) : window.location.pathname;
         startTransition(() => {
-            router.get(currentUrl, { per_page: data.per_page }, {
+            router.get(currentUrl, { per_page: paginationData.per_page }, {
                 preserveState: true,
                 preserveScroll: true,
                 replace: true,
@@ -127,7 +163,7 @@ export default function DataTable<T extends Record<string, any>>({
 
     // Virtualization setup when per_page >= 100
     const rowVirtualizer = useVirtualizer({
-        count: data.data.length,
+        count: items.length,
         getScrollElement: () => parentRef.current,
         estimateSize: () => 41,
         overscan: 10,
@@ -262,7 +298,7 @@ export default function DataTable<T extends Record<string, any>>({
                             className="divide-y divide-zinc-100"
                         >
                             {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                                const row = data.data[virtualRow.index];
+                                const row = items[virtualRow.index];
                                 return (
                                     <tr
                                         key={virtualRow.key}
@@ -297,8 +333,8 @@ export default function DataTable<T extends Record<string, any>>({
                         </tbody>
                     ) : (
                         <tbody className="divide-y divide-zinc-100 bg-white">
-                            {data.data.length > 0 ? (
-                                data.data.map((row, rowIdx) => (
+                            {items.length > 0 ? (
+                                items.map((row, rowIdx) => (
                                     <tr
                                         key={rowIdx}
                                         className="hover:bg-zinc-50/70 transition-colors group"
@@ -327,7 +363,7 @@ export default function DataTable<T extends Record<string, any>>({
                                         colSpan={columns.length}
                                         className="py-12 text-center text-xs text-zinc-400 font-medium"
                                     >
-                                        {emptyText}
+                                        {resolvedEmptyText}
                                     </td>
                                 </tr>
                             )}
@@ -339,18 +375,18 @@ export default function DataTable<T extends Record<string, any>>({
             {/* Pagination Footer */}
             <div className="px-4 py-3 border-t border-zinc-200/70 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs bg-white">
                 <div className="text-zinc-500 tabular-nums">
-                    Menampilkan <span className="font-semibold text-zinc-800">{data.from ?? 0}</span> sampai{' '}
-                    <span className="font-semibold text-zinc-800">{data.to ?? 0}</span> dari{' '}
-                    <span className="font-semibold text-zinc-800">{data.total}</span> total data
+                    Menampilkan <span className="font-semibold text-zinc-800">{paginationData.from ?? 0}</span> sampai{' '}
+                    <span className="font-semibold text-zinc-800">{paginationData.to ?? 0}</span> dari{' '}
+                    <span className="font-semibold text-zinc-800">{paginationData.total}</span> total data
                 </div>
 
-                {data.last_page > 1 && (
+                {paginationData.last_page > 1 && (
                     <div className="flex items-center gap-1">
                         {/* Prev Button */}
                         <button
                             type="button"
-                            disabled={!data.prev_page_url}
-                            onClick={() => data.prev_page_url && updateQuery({ page: data.current_page - 1 })}
+                            disabled={!paginationData.prev_page_url}
+                            onClick={() => paginationData.prev_page_url && updateQuery({ page: paginationData.current_page - 1 })}
                             className="inline-flex items-center justify-center p-1.5 text-zinc-600 bg-white border border-zinc-200/90 rounded-sm hover:bg-zinc-50 hover:text-zinc-900 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                             title="Halaman Sebelumnya"
                         >
@@ -358,7 +394,7 @@ export default function DataTable<T extends Record<string, any>>({
                         </button>
 
                         {/* Page Numbers */}
-                        {data.links
+                        {paginationData.links
                             .filter((link) => !link.label.includes('Previous') && !link.label.includes('Next'))
                             .map((link, idx) => {
                                 const isCurrent = link.active;
@@ -391,8 +427,8 @@ export default function DataTable<T extends Record<string, any>>({
                         {/* Next Button */}
                         <button
                             type="button"
-                            disabled={!data.next_page_url}
-                            onClick={() => data.next_page_url && updateQuery({ page: data.current_page + 1 })}
+                            disabled={!paginationData.next_page_url}
+                            onClick={() => paginationData.next_page_url && updateQuery({ page: paginationData.current_page + 1 })}
                             className="inline-flex items-center justify-center p-1.5 text-zinc-600 bg-white border border-zinc-200/90 rounded-sm hover:bg-zinc-50 hover:text-zinc-900 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                             title="Halaman Berikutnya"
                         >

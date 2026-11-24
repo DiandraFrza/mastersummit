@@ -52,5 +52,14 @@ class DatabaseSeeder extends Seeder
 
         // 4. Default Clinic Setting (Domain B)
         ClinicSetting::current();
+
+        // 5. Core Master Data (Domain C - Task 2A)
+        $this->call(CoreMasterSeeder::class);
+
+        // 6. Services & Packages (Domain C - Task 2B)
+        $this->call(ServicePackageSeeder::class);
+
+        // 7. Realistic Clinic Seeders (Domain D - Task 2D)
+        $this->call(RealisticClinicSeeder::class);
     }
 }
