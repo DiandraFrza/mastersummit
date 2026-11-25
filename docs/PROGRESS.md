@@ -1,8 +1,28 @@
 # Development Progress & Micro-Task Tracker
 
-> **Last Updated:** 2026-11-25 (Fase 5 Selesai — Task 5D 100% Done & End-to-End Verified)
-> **Current Phase:** Seluruh Fase 1 - 5 Telah Selesai (100% Complete)
-> **Status:** Siap Produksi & UAT Handover (145 Tests Passing, 977 Assertions, Vite Zero Build Warnings)
+> **Last Updated:** 2026-11-25 (Refactor R1 Selesai — Persistent Layout & Skala UI Operator Klinik)
+> **Current Phase:** Seluruh Fase 1 - 5 + Evaluasi UI/UX R1 Selesai (100% Complete)
+> **Status:** Siap Produksi & UAT Handover (Sidebar Anti-Refresh, Skala Baca Nyaman, Zero AI Slop)
+
+---
+
+## Refactor R1: Clinical Operator Usability & Persistent Layout
+- [x] **R1.1 — Persistent Layout (Anti-Refresh Sidebar):** Moved `<AuthenticatedLayout>` resolution to `resources/js/app.tsx` via `module.default.layout`. Sidebar never re-mounts or refreshes during SPA route transitions, scroll position stays intact, and active parent dropdown accordions remain open automatically.
+- [x] **R1.2 — Strict Clinical Sidebar Hierarchy:** Restructured sidebar into 8 clinical groups:
+  - HALAMAN UTAMA: `Dashboard`
+  - DATA MASTER: `Master Pemeriksaan` (Sampel, Laboratorium, Radiologi, Elektromedis, Pemeriksaan Fisik, Tarif Paket), `Master Pendaftaran` (Master Perujuk, Perujuk, Bank), `Master Umum` (Unit, Perusahaan, Pegawai, Pengguna, Vendor)
+  - ADMIN: `Pendaftaran` (manajemen/void/edit admin)
+  - PENDAFTARAN: `Pasien`, `Pendaftaran`, `Ambil Hasil`
+  - DATA MCU: `MCU`, `Hasil MCU`, `Input Hasil MCU`, `Review Manajer MCU`, `Review Dokter MCU`, `Ambil Sampel`
+  - DATA HASIL PENUNJANG: `Laboratorium`, `Radiologi`, `Elektromedis`, `Fisik`
+  - LAPORAN: `Pendapatan` (`Pendapatan Harian`, `Rekap Pendapatan`), `Pemeriksaan` (`Pemeriksaan`, `Rekap Pemeriksaan`)
+  - LAINNYA: `Kartu Kontrol`, `Pengaturan` (`Pengaturan Klinik`, `Audit Trail`)
+- [x] **R1.3 — Scaled UI (Readable & Anti-Salah Klik):**
+  - Sidebar: `text-[15px]`, padding `py-2.5 px-3.5`, icon `w-5 h-5`.
+  - DataTable: header `text-xs font-semibold uppercase tracking-wider py-3.5 px-4`, rows `text-sm py-3.5 px-4` with subtle zebra striping (`even:bg-zinc-50/70`) and clear hover.
+  - Controls & Buttons: `h-10` (`40px`), `text-sm font-medium`, primary button `h-10 px-4 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-sm`.
+  - Action dropdown items: `px-3.5 py-2.5 text-sm` with `w-4 h-4` icons.
+- [x] **R1.4 — Zero AI-Slop Cleanup:** Removed all descriptive subtitle paragraphs under headers across all 28 pages; eliminated confusing buzzwords; standardized concise 1–3 word Indonesian terms (`Master Sampel`, `Tambah Data`, `Cari`, `Terapkan`, `Reset`, `Simpan`, `Batal`, `Aksi`); updated `.agents/rules/antigravity_project_rules.md`.
 
 ---
 

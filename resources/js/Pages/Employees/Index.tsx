@@ -1,6 +1,5 @@
 import React, { useState, useRef } from 'react';
 import { Head, router, useForm } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import DataTable, { ColumnDef } from '@/Components/DataTable';
 import Badge from '@/Components/Badge';
 import ActionDropdown, { ActionDropdownItem } from '@/Components/ActionDropdown';
@@ -249,28 +248,25 @@ export default function EmployeesIndex({ employees, filters }: EmployeesIndexPro
     ];
 
     return (
-        <AuthenticatedLayout title="Master Pegawai">
-            <Head title="Master Pegawai — Master Summit" />
+        <>
+            <Head title="Master Pegawai" />
 
             <div className="space-y-4">
                 {/* Header Title & Primary Action */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-zinc-200/70">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-zinc-200">
                     <div>
-                        <h2 className="text-base font-semibold text-zinc-900 tracking-tight">
-                            Master Data Pegawai
-                        </h2>
-                        <p className="text-xs text-zinc-500 mt-0.5">
-                            Data dokter penanggung jawab, analis laboratorium, radiografer, perawat, dan tanda tangan digital.
-                        </p>
+                        <h1 className="text-xl font-bold text-zinc-900 tracking-tight">
+                            Master Pegawai
+                        </h1>
                     </div>
 
                     <button
                         type="button"
                         onClick={openCreateModal}
-                        className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-zinc-900 hover:bg-zinc-800 rounded-sm shadow-2xs transition-colors cursor-pointer shrink-0"
+                        className="inline-flex items-center justify-center gap-2 h-10 px-4 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-md shadow-xs transition-colors cursor-pointer shrink-0"
                     >
-                        <Plus className="w-3.5 h-3.5" />
-                        <span>Tambah Pegawai</span>
+                        <Plus className="w-4 h-4" />
+                        <span>Tambah Data</span>
                     </button>
                 </div>
 
@@ -584,6 +580,6 @@ export default function EmployeesIndex({ employees, filters }: EmployeesIndexPro
                     </div>
                 </form>
             </Modal>
-        </AuthenticatedLayout>
+        </>
     );
 }

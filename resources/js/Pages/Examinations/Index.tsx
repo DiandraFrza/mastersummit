@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import DataTable, { ColumnDef } from '@/Components/DataTable';
 import Badge from '@/Components/Badge';
 import {
@@ -277,27 +276,21 @@ export default function Index({
     ];
 
     return (
-        <AuthenticatedLayout>
-            <Head title="Antrean Input Hasil Penunjang" />
+        <>
+            <Head title="Input Hasil MCU" />
 
             <div className="space-y-4">
                 {/* Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-zinc-200/80 pb-3">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-zinc-200 pb-3">
                     <div>
-                        <div className="flex items-center gap-2">
-                            <ClipboardCheck className="h-5 w-5 text-zinc-700" />
-                            <h1 className="text-lg font-semibold text-zinc-900 tracking-tight">
-                                Antrean Input Hasil Penunjang
-                            </h1>
-                        </div>
-                        <p className="text-xs text-zinc-500 mt-0.5">
-                            Pencatatan hasil pemeriksaan Laboratorium, Radiologi, Elektromedis & Fisik Dokter
-                        </p>
+                        <h1 className="text-xl font-bold text-zinc-900 tracking-tight">
+                            Input Hasil MCU
+                        </h1>
                     </div>
                 </div>
 
                 {/* Category Navigation Pills */}
-                <div className="flex flex-wrap items-center gap-1.5 border-b border-zinc-200 pb-2">
+                <div className="flex flex-wrap items-center gap-2 border-b border-zinc-200 pb-3">
                     {categories.map((cat) => {
                         const Icon = cat.icon;
                         const isActive = category === cat.id;
@@ -306,13 +299,13 @@ export default function Index({
                                 key={cat.id}
                                 type="button"
                                 onClick={() => handleCategoryClick(cat.id)}
-                                className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded transition-colors ${
+                                className={`inline-flex items-center gap-2 h-10 px-4 text-sm font-medium rounded-md transition-colors ${
                                     isActive
-                                        ? 'bg-zinc-900 text-white shadow-2xs'
-                                        : 'bg-white text-zinc-600 hover:bg-zinc-100 border border-zinc-200/80'
+                                        ? 'bg-zinc-900 text-white shadow-xs'
+                                        : 'bg-white text-zinc-700 hover:bg-zinc-100 border border-zinc-200'
                                 }`}
                             >
-                                <Icon className="h-3.5 w-3.5" />
+                                <Icon className="h-4 w-4" />
                                 <span>{cat.name}</span>
                             </button>
                         );
@@ -396,6 +389,6 @@ export default function Index({
                     />
                 </div>
             </div>
-        </AuthenticatedLayout>
+        </>
     );
 }

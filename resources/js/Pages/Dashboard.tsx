@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Head } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import DataTable, { ColumnDef } from '@/Components/DataTable';
 import Badge, { BadgeVariant } from '@/Components/Badge';
 import ActionDropdown, { ActionDropdownItem } from '@/Components/ActionDropdown';
@@ -145,24 +144,21 @@ export default function Dashboard({ stats, activities, filters }: DashboardProps
     ];
 
     return (
-        <AuthenticatedLayout title="Dashboard">
+        <>
             <Head title="Dashboard — Master Summit" />
 
             <div className="space-y-6">
                 {/* Header Welcome Bar */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-zinc-200/70">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-zinc-200/80">
                     <div>
-                        <h2 className="text-base font-semibold text-zinc-900 tracking-tight">
-                            Ringkasan Operasional Klinik
-                        </h2>
-                        <p className="text-xs text-zinc-500 mt-0.5">
-                            Status data master, pengguna aktif, dan riwayat aktivitas audit sistem.
-                        </p>
+                        <h1 className="text-xl font-bold text-zinc-900 tracking-tight">
+                            Dashboard
+                        </h1>
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white border border-zinc-200/80 rounded-sm text-xs font-medium text-zinc-700 shadow-2xs">
-                            <Building2 className="w-3.5 h-3.5 text-zinc-400" />
+                        <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-zinc-200 rounded-md text-sm font-medium text-zinc-700 shadow-2xs">
+                            <Building2 className="w-4 h-4 text-zinc-400" />
                             <span>{stats.clinic_name}</span>
                         </span>
                     </div>
@@ -312,6 +308,6 @@ export default function Dashboard({ stats, activities, filters }: DashboardProps
                     </div>
                 )}
             </Modal>
-        </AuthenticatedLayout>
+        </>
     );
 }

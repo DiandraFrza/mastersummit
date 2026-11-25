@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import Badge from '@/Components/Badge';
 import Modal from '@/Components/Modal';
 import {
@@ -118,27 +117,27 @@ export default function Bulk({ auth, mcuEvent, kpi, importLogs }: BulkProps) {
     };
 
     return (
-        <AuthenticatedLayout>
-            <Head title={`Bulk Excel Input Hasil - ${mcuEvent.event_name} (${mcuEvent.event_code})`} />
+        <>
+            <Head title={`Input Hasil Excel - ${mcuEvent.event_name}`} />
 
             <div className="space-y-5">
                 {/* Header Banner */}
-                <div className="rounded border border-zinc-200 bg-white p-4 shadow-2xs">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-zinc-100 pb-3">
+                <div className="rounded-sm border border-zinc-200 bg-white p-4 shadow-2xs">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-zinc-200 pb-3">
                         <div className="flex items-center gap-3">
                             <Link
                                 href={route('events.index')}
-                                className="inline-flex h-8 w-8 items-center justify-center rounded border border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 transition-colors"
-                                title="Kembali ke Daftar Event MCU"
+                                className="inline-flex h-10 w-10 items-center justify-center rounded-sm border border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 transition-colors shadow-2xs"
+                                title="Kembali"
                             >
                                 <ArrowLeft className="h-4 w-4" />
                             </Link>
                             <div>
                                 <div className="flex items-center gap-2">
-                                    <h1 className="text-base font-semibold text-zinc-900">
+                                    <h1 className="text-xl font-bold text-zinc-900 tracking-tight">
                                         {mcuEvent.event_name}
                                     </h1>
-                                    <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded bg-zinc-100 text-zinc-700">
+                                    <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded-sm bg-zinc-100 text-zinc-700 border border-zinc-200">
                                         {mcuEvent.event_code}
                                     </span>
                                 </div>
@@ -526,6 +525,6 @@ export default function Bulk({ auth, mcuEvent, kpi, importLogs }: BulkProps) {
                     </div>
                 </div>
             </Modal>
-        </AuthenticatedLayout>
+        </>
     );
 }

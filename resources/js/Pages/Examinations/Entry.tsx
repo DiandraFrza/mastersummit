@@ -1,6 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import Badge from '@/Components/Badge';
 import { AudiogramGrid } from '@/Components/AudiogramGrid';
 import {
@@ -577,28 +576,28 @@ export default function Entry({
     };
 
     return (
-        <AuthenticatedLayout>
-            <Head title={`Input Hasil - ${registration.patient?.name || ''} (${registration.reg_no})`} />
+        <>
+            <Head title={`Input Hasil - ${registration.patient?.name || ''}`} />
 
             <div className="space-y-4">
                 {/* Top Demographics Banner */}
-                <div className="rounded border border-zinc-200 bg-white p-3.5 shadow-2xs">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-zinc-100 pb-3">
+                <div className="rounded-sm border border-zinc-200 bg-white p-4 shadow-2xs">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-zinc-200 pb-3">
                         <div className="flex items-center gap-3">
                             <Link
                                 href={route('examinations.index')}
-                                className="inline-flex h-8 w-8 items-center justify-center rounded border border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 transition-colors"
-                                title="Kembali ke Antrean"
+                                className="inline-flex h-10 w-10 items-center justify-center rounded-sm border border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 transition-colors shadow-2xs"
+                                title="Kembali"
                             >
                                 <ArrowLeft className="h-4 w-4" />
                             </Link>
                             <div>
                                 <div className="flex items-center gap-2">
-                                    <h1 className="text-base font-semibold text-zinc-900">
+                                    <h1 className="text-xl font-bold text-zinc-900 tracking-tight">
                                         {registration.patient?.name}
                                     </h1>
                                     <span
-                                        className={`font-semibold px-1.5 py-0.5 rounded text-[11px] ${
+                                        className={`font-semibold px-2 py-0.5 rounded-sm text-xs ${
                                             registration.patient?.gender === 'L'
                                                 ? 'bg-blue-50 text-blue-700 border border-blue-200'
                                                 : 'bg-rose-50 text-rose-700 border border-rose-200'
@@ -606,7 +605,7 @@ export default function Entry({
                                     >
                                         {registration.patient?.gender === 'L' ? 'Laki-laki' : 'Perempuan'}
                                     </span>
-                                    <span className="text-xs text-zinc-500 font-mono">
+                                    <span className="text-sm text-zinc-500 font-mono">
                                         ({patientAge} Tahun)
                                     </span>
                                 </div>
@@ -1234,6 +1233,6 @@ export default function Entry({
                     )}
                 </div>
             </div>
-        </AuthenticatedLayout>
+        </>
     );
 }

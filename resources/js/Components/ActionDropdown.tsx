@@ -45,10 +45,10 @@ export default function ActionDropdown({
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-zinc-700 bg-white border border-zinc-200/80 rounded-sm hover:bg-zinc-50 hover:text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-400 transition-colors shadow-2xs"
+                className="inline-flex items-center gap-2 h-9 px-3 text-sm font-medium text-zinc-700 bg-white border border-zinc-200 rounded-md hover:bg-zinc-50 hover:text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-400 transition-colors shadow-2xs"
             >
                 <span>{label}</span>
-                <ChevronDown className={`w-3 h-3 text-zinc-400 transition-transform duration-150 ${isOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-4 h-4 text-zinc-400 transition-transform duration-150 ${isOpen ? 'rotate-180' : ''}`} />
             </button>
 
             <AnimatePresence>
@@ -58,7 +58,7 @@ export default function ActionDropdown({
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.96, y: -2 }}
                         transition={{ duration: 0.12 }}
-                        className={`absolute z-30 mt-1 min-w-[150px] bg-white border border-zinc-200/90 rounded-md shadow-md py-1 focus:outline-none ${
+                        className={`absolute z-30 mt-1 min-w-[170px] bg-white border border-zinc-200 rounded-md shadow-lg py-1.5 focus:outline-none ${
                             align === 'right' ? 'right-0 origin-top-right' : 'left-0 origin-top-left'
                         }`}
                     >
@@ -71,14 +71,14 @@ export default function ActionDropdown({
                                     <a
                                         key={index}
                                         href={item.href}
-                                        className={`flex items-center gap-2 px-3 py-1.5 text-xs transition-colors ${
+                                        className={`flex items-center gap-2.5 px-3.5 py-2.5 text-sm font-medium transition-colors ${
                                             isDanger
                                                 ? 'text-rose-600 hover:bg-rose-50'
                                                 : 'text-zinc-700 hover:bg-zinc-50 hover:text-zinc-900'
                                         } ${item.disabled ? 'opacity-50 pointer-events-none' : ''}`}
                                         onClick={() => setIsOpen(false)}
                                     >
-                                        {Icon && <Icon className="w-3.5 h-3.5" />}
+                                        {Icon && <Icon className="w-4 h-4 shrink-0" />}
                                         <span>{item.label}</span>
                                     </a>
                                 );
@@ -93,13 +93,13 @@ export default function ActionDropdown({
                                         setIsOpen(false);
                                         item.onClick?.();
                                     }}
-                                    className={`w-full flex items-center gap-2 px-3 py-1.5 text-xs text-left transition-colors ${
+                                    className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm font-medium text-left transition-colors ${
                                         isDanger
                                             ? 'text-rose-600 hover:bg-rose-50'
                                             : 'text-zinc-700 hover:bg-zinc-50 hover:text-zinc-900'
                                     } ${item.disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 >
-                                    {Icon && <Icon className="w-3.5 h-3.5" />}
+                                    {Icon && <Icon className="w-4 h-4 shrink-0" />}
                                     <span>{item.label}</span>
                                 </button>
                             );

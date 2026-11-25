@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import DataTable, { ColumnDef } from '@/Components/DataTable';
 import Badge from '@/Components/Badge';
 import {
@@ -252,19 +251,17 @@ export default function Index({
     ];
 
     return (
-        <AuthenticatedLayout user={auth.user}>
-            <Head title="Review & QC Manajer MCU" />
+        <>
+            <Head title="Review Manajer MCU" />
 
             <div className="space-y-6">
                 {/* Header Title */}
-                <div>
-                    <h1 className="text-xl font-bold tracking-tight text-zinc-900 flex items-center gap-2.5">
-                        <ShieldCheck className="w-6 h-6 text-emerald-600" />
-                        <span>Review & QC Manajer MCU</span>
-                    </h1>
-                    <p className="mt-1 text-sm text-zinc-500">
-                        Quality Control pemeriksaan MCU, verifikasi kelaikan medis, dan lock approval sebelum rilis buku MCU & portal hasil online.
-                    </p>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-3 border-b border-zinc-200">
+                    <div>
+                        <h1 className="text-xl font-bold tracking-tight text-zinc-900">
+                            Review Manajer MCU
+                        </h1>
+                    </div>
                 </div>
 
                 {/* KPI Summary Cards */}
@@ -435,6 +432,6 @@ export default function Index({
                     />
                 </div>
             </div>
-        </AuthenticatedLayout>
+        </>
     );
 }

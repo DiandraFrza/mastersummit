@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Head, router } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import DataTable, { ColumnDef } from '@/Components/DataTable';
 import Badge from '@/Components/Badge';
 import Modal from '@/Components/Modal';
@@ -482,37 +481,33 @@ export default function Collect({
     ];
 
     return (
-        <AuthenticatedLayout>
-            <Head title="Modul Ambil Sampel (Smart Barcode)" />
+        <>
+            <Head title="Ambil Sampel" />
 
             <div className="space-y-4">
                 {/* Header */}
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between pb-3 border-b border-zinc-200/80">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between pb-3 border-b border-zinc-200">
                     <div>
-                        <h1 className="text-lg font-bold tracking-tight text-zinc-900 flex items-center gap-2">
-                            <TestTubes className="w-5 h-5 text-zinc-700" />
-                            Modul Ambil Sampel
+                        <h1 className="text-xl font-bold tracking-tight text-zinc-900">
+                            Ambil Sampel
                         </h1>
-                        <p className="text-xs text-zinc-500 mt-0.5">
-                            Check-in spesimen cepat dengan Smart Barcode USB / Kamera terfilter otomatis per pos stasiun.
-                        </p>
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white border border-zinc-200 rounded-md text-xs font-medium text-zinc-600 shadow-2xs">
-                            <Calendar className="w-3.5 h-3.5 text-zinc-400" />
+                        <div className="inline-flex items-center gap-2 h-10 px-3.5 bg-white border border-zinc-200 rounded-md text-sm font-medium text-zinc-700 shadow-2xs">
+                            <Calendar className="w-4 h-4 text-zinc-400" />
                             <input
                                 type="date"
                                 value={filters.date}
                                 onChange={(e) => handleDateChange(e.target.value)}
-                                className="border-0 p-0 text-xs focus:ring-0 text-zinc-800 font-mono"
+                                className="border-0 p-0 text-sm focus:ring-0 text-zinc-800 font-mono"
                             />
                         </div>
                         {filters.date !== new Date().toISOString().split('T')[0] && (
                             <button
                                 type="button"
                                 onClick={() => handleDateChange(new Date().toISOString().split('T')[0])}
-                                className="px-2 py-1 text-xs font-medium text-zinc-600 hover:bg-zinc-100 rounded transition-colors border border-zinc-200 bg-white"
+                                className="h-10 px-3.5 text-sm font-medium text-zinc-700 hover:bg-zinc-100 rounded-md transition-colors border border-zinc-200 bg-white"
                             >
                                 Hari Ini
                             </button>
@@ -816,6 +811,6 @@ export default function Collect({
                     </div>
                 </form>
             </Modal>
-        </AuthenticatedLayout>
+        </>
     );
 }

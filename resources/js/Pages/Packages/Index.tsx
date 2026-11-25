@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from 'react';
 import { Head, router, useForm } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import DataTable, { ColumnDef } from '@/Components/DataTable';
 import Badge from '@/Components/Badge';
 import ActionDropdown, { ActionDropdownItem } from '@/Components/ActionDropdown';
@@ -331,34 +330,24 @@ export default function PackagesIndex({
     ];
 
     return (
-        <AuthenticatedLayout
-            title="Master Paket Pemeriksaan & MCU"
-            breadcrumb={[
-                { label: 'Data Master' },
-                { label: 'Paket MCU' },
-            ]}
-        >
-            <Head title="Master Paket MCU" />
+        <>
+            <Head title="Tabel Master Tarif Paket" />
 
             <div className="space-y-4">
                 {/* Header Action Bar */}
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white p-4 rounded-md border border-zinc-200/80">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white p-4 rounded-md border border-zinc-200">
                     <div>
-                        <h1 className="text-base font-semibold text-zinc-900 flex items-center gap-2">
-                            <PackageCheck className="w-5 h-5 text-teal-600" />
-                            <span>Master Paket Pemeriksaan & Tarif Bundling MCU</span>
+                        <h1 className="text-xl font-bold text-zinc-900 tracking-tight">
+                            Tabel Master Tarif Paket
                         </h1>
-                        <p className="text-xs text-zinc-500 mt-0.5">
-                            Paket Medical Check Up tahunan, kontrak korporat, diskon bundling, dan pengelompokan layanan klinis.
-                        </p>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2.5">
                         {/* Year Filter Select */}
                         <select
                             value={filters.year || ''}
                             onChange={(e) => handleFilterChange('year', e.target.value)}
-                            className="text-xs px-2.5 py-1.5 bg-white border border-zinc-200/80 rounded-md text-zinc-700 focus:outline-none focus:ring-1 focus:ring-teal-500 font-mono"
+                            className="h-10 text-sm px-3 bg-white border border-zinc-200 rounded-md text-zinc-700 focus:outline-none focus:ring-1 focus:ring-zinc-400 font-medium"
                         >
                             <option value="">Semua Tahun</option>
                             {[2024, 2025, 2026, 2027].map((yr) => (
@@ -369,11 +358,11 @@ export default function PackagesIndex({
                         </select>
 
                         {/* Status Filter Tab Pills */}
-                        <div className="flex items-center bg-zinc-100 p-0.5 rounded-md border border-zinc-200/80 text-xs">
+                        <div className="flex items-center bg-zinc-100 p-1 rounded-md border border-zinc-200 text-sm h-10">
                             <button
                                 type="button"
                                 onClick={() => handleFilterChange('status', 'all')}
-                                className={`px-2.5 py-1 rounded font-medium transition-colors ${
+                                className={`px-3 py-1 rounded-sm font-medium transition-colors ${
                                     (filters.status || 'all') === 'all'
                                         ? 'bg-white text-zinc-900 shadow-xs'
                                         : 'text-zinc-600 hover:text-zinc-900'
@@ -384,7 +373,7 @@ export default function PackagesIndex({
                             <button
                                 type="button"
                                 onClick={() => handleFilterChange('status', 'active')}
-                                className={`px-2.5 py-1 rounded font-medium transition-colors ${
+                                className={`px-3 py-1 rounded-sm font-medium transition-colors ${
                                     filters.status === 'active'
                                         ? 'bg-white text-emerald-700 shadow-xs'
                                         : 'text-zinc-600 hover:text-zinc-900'
@@ -395,23 +384,23 @@ export default function PackagesIndex({
                             <button
                                 type="button"
                                 onClick={() => handleFilterChange('status', 'inactive')}
-                                className={`px-2.5 py-1 rounded font-medium transition-colors ${
+                                className={`px-3 py-1 rounded-sm font-medium transition-colors ${
                                     filters.status === 'inactive'
                                         ? 'bg-white text-zinc-700 shadow-xs'
                                         : 'text-zinc-600 hover:text-zinc-900'
                                 }`}
                             >
-                                Non-Aktif
+                                Nonaktif
                             </button>
                         </div>
 
                         <button
                             type="button"
                             onClick={openCreateModal}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-teal-600 hover:bg-teal-700 active:bg-teal-800 rounded-md transition-colors shadow-xs"
+                            className="inline-flex items-center gap-2 h-10 px-4 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-md transition-colors shadow-xs"
                         >
                             <Plus className="w-4 h-4" />
-                            <span>Tambah Paket MCU</span>
+                            <span>Tambah Data</span>
                         </button>
                     </div>
                 </div>
@@ -657,13 +646,13 @@ export default function PackagesIndex({
                         <button
                             type="submit"
                             disabled={processing}
-                            className="px-4 py-1.5 text-xs font-medium text-white bg-teal-600 hover:bg-teal-700 disabled:opacity-50 rounded-md transition-colors shadow-xs"
+                            className="h-10 px-4 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 rounded-md transition-colors shadow-xs"
                         >
                             {processing ? 'Menyimpan...' : 'Simpan'}
                         </button>
                     </div>
                 </form>
             </Modal>
-        </AuthenticatedLayout>
+        </>
     );
 }

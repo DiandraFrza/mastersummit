@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Head, router } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import DataTable, { ColumnDef } from '@/Components/DataTable';
 import Badge from '@/Components/Badge';
 import Modal from '@/Components/Modal';
@@ -205,20 +204,16 @@ export default function Index({
     ];
 
     return (
-        <AuthenticatedLayout>
-            <Head title="Audit Trail / Log Aktivitas Sistem" />
+        <>
+            <Head title="Audit Trail" />
 
             <div className="space-y-4">
                 {/* Header Title */}
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pb-3 border-b border-zinc-200/80">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pb-3 border-b border-zinc-200">
                     <div>
-                        <h1 className="text-lg font-bold tracking-tight text-zinc-900 flex items-center gap-2">
-                            <ShieldAlert className="w-5 h-5 text-zinc-700" />
-                            Audit Trail / Log Aktivitas Sistem
+                        <h1 className="text-xl font-bold tracking-tight text-zinc-900">
+                            Audit Trail
                         </h1>
-                        <p className="text-xs text-zinc-500 mt-0.5">
-                            Rekam jejak riwayat mutasi database, modifikasi tarif/parameter, validasi klinis, dan aktivitas pengguna.
-                        </p>
                     </div>
                 </div>
 
@@ -485,7 +480,7 @@ export default function Index({
                         <div className="flex justify-end pt-2">
                             <button
                                 onClick={() => setSelectedActivity(null)}
-                                className="px-4 py-1.5 text-xs font-semibold text-zinc-700 bg-zinc-100 hover:bg-zinc-200 rounded transition-colors"
+                                className="h-9 px-4 text-sm font-semibold text-zinc-700 bg-zinc-100 hover:bg-zinc-200 rounded-md transition-colors"
                             >
                                 Tutup
                             </button>
@@ -493,6 +488,6 @@ export default function Index({
                     </div>
                 )}
             </Modal>
-        </AuthenticatedLayout>
+        </>
     );
 }

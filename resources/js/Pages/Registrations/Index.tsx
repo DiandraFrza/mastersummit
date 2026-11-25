@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Head, router, useForm } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import DataTable, { ColumnDef } from '@/Components/DataTable';
 import Badge from '@/Components/Badge';
 import ActionDropdown, { ActionDropdownItem } from '@/Components/ActionDropdown';
@@ -452,30 +451,26 @@ export default function RegistrationsIndex({
     ];
 
     return (
-        <AuthenticatedLayout>
-            <Head title="Pendaftaran 1 Pintu & Split Billing" />
+        <>
+            <Head title="Pendaftaran" />
 
             <div className="space-y-4">
                 {/* Header */}
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pb-3 border-b border-zinc-200/80">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pb-3 border-b border-zinc-200">
                     <div>
-                        <h1 className="text-lg font-bold tracking-tight text-zinc-900 flex items-center gap-2">
-                            <Receipt className="w-5 h-5 text-zinc-700" />
-                            Pendaftaran 1 Pintu
+                        <h1 className="text-xl font-bold tracking-tight text-zinc-900">
+                            Pendaftaran
                         </h1>
-                        <p className="text-xs text-zinc-500 mt-0.5">
-                            Registrasi pasien terpadu untuk Reguler, MCU Korporat, Pasien Mandiri (APS), dan Rujukan Dokter.
-                        </p>
                     </div>
 
                     <div>
                         <button
                             type="button"
                             onClick={openCreateModal}
-                            className="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-zinc-900 rounded-md hover:bg-zinc-800 transition-colors shadow-xs"
+                            className="inline-flex items-center justify-center gap-2 h-10 px-4 text-sm font-semibold text-white bg-emerald-600 rounded-md hover:bg-emerald-700 transition-colors shadow-xs"
                         >
-                            <Plus className="w-3.5 h-3.5" />
-                            Pendaftaran Baru
+                            <Plus className="w-4 h-4" />
+                            <span>Tambah Data</span>
                         </button>
                     </div>
                 </div>
@@ -1181,6 +1176,6 @@ export default function RegistrationsIndex({
                     </div>
                 </form>
             </Modal>
-        </AuthenticatedLayout>
+        </>
     );
 }

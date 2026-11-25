@@ -67,16 +67,34 @@ Before creating any migration, model, controller, service, or UI component, you 
 ## 4. UI/UX Design System (Strict Minimalist — Anti AI-Slop)
 Target visual benchmark: **Linear / Stripe / Vercel** — crisp, fast, high-clarity medical workspace.
 
+- **Persistent Layout & Navigation Architecture:**
+  - Sidebar and top bar live in a persistent layout (`resources/js/app.tsx`). Page navigation MUST NEVER remount or refresh the sidebar or reset scroll position.
+  - Active parent dropdowns in the sidebar auto-expand based on the current URL.
+  - Strict sidebar hierarchy matching clinical workflow:
+    - HALAMAN UTAMA: `Dashboard`
+    - DATA MASTER: `Master Pemeriksaan` (accordion), `Master Pendaftaran` (accordion), `Master Umum` (accordion)
+    - ADMIN: `Pendaftaran`
+    - PENDAFTARAN: `Pasien`, `Pendaftaran`, `Ambil Hasil`
+    - DATA MCU: `MCU`, `Hasil MCU`, `Input Hasil MCU`, `Review Manajer MCU`, `Review Dokter MCU`, `Ambil Sampel`
+    - DATA HASIL PENUNJANG: `Laboratorium`, `Radiologi`, `Elektromedis`, `Fisik`
+    - LAPORAN: `Pendapatan` (accordion), `Pemeriksaan` (accordion)
+    - LAINNYA: `Kartu Kontrol`, `Pengaturan` (accordion)
+- **Clinical Operator UI Scale (Readable & Anti-Salah Klik):**
+  - Sidebar links & accordions: `text-[15px]` with comfortable padding `py-2.5 px-3.5` and clear `w-5 h-5` icons.
+  - DataTable headers: `text-xs font-semibold uppercase tracking-wider py-3.5 px-4`.
+  - DataTable rows: `text-sm py-3.5 px-4` with subtle zebra striping (`even:bg-zinc-50/70`) and clear hover state (`hover:bg-zinc-100/70`).
+  - Inputs, select dropdowns & buttons: minimum height `h-10` (`40px`), `text-sm font-medium`.
+  - Primary create buttons: `h-10 px-4 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-sm`.
+  - Row action dropdown items: `px-3.5 py-2.5 text-sm` with `w-4 h-4` icons.
+- **Zero AI-Slop & Direct Indonesian Terminology (STRICT BAN):**
+  - **FORBIDDEN:** Long explanatory subtitle paragraphs beneath page headers. Keep page headers clean: single concise title `<h1>` (e.g. `Master Sampel`, `Data Pasien`, `Pendaftaran Pasien`).
+  - **FORBIDDEN:** Confusing mixed-language terms or buzzwords (`advice`, `workflow`, `snapshot`, `atau`, `untuk`, excessive `/` and `\`).
+  - **MANDATORY:** Direct, concise 1–3 word Indonesian terms: `Tambah Data`, `Cari`, `Terapkan`, `Reset`, `Ubah`, `Hapus`, `Aktifkan`, `Nonaktifkan`, `Simpan`, `Batal`, `Aksi`, `Semua`.
 - **Surfaces & Borders:**
   - App canvas: `#FAFAFA` (`bg-zinc-50`).
   - Content / Table / Modal surface: `#FFFFFF` (`bg-white`).
-  - Borders: Clean hairline `1px solid` (`border-zinc-200/80`) with consistent `rounded-sm` or `rounded-md` corners.
+  - Borders: Clean hairline `1px solid` (`border-zinc-200`) with consistent `rounded-sm` corners.
   - **FORBIDDEN:** Nested cards inside cards, heavy drop shadows, checkered/patterned backgrounds, bright neon/purple AI gradients, or unnecessary decorative borders.
-- **Navigation & Controls:**
-  - Sidebar collapse toggle placed cleanly beside the brand logo/title.
-  - Concise single-word primary button labels where appropriate (`Simpan`, `Batal`, `Terapkan`, `Reset`).
-  - Unified `Aksi` dropdown menu per table row instead of 4–5 colorful inline buttons.
-  - Retain form state cleanly inside modals when validation fails; clearly mark optional fields where helpful.
 - **Typography & Data Clarity:**
   - Primary font: `Public Sans` or `Inter`.
   - **MANDATORY `tabular-nums`** on all numeric columns (prices, lab values, ages, dates, `reg_no`, totals) so digits align vertically.

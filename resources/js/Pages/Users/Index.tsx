@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Head, router, useForm } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import DataTable, { ColumnDef } from '@/Components/DataTable';
 import Badge from '@/Components/Badge';
 import ActionDropdown, { ActionDropdownItem } from '@/Components/ActionDropdown';
@@ -322,38 +321,33 @@ export default function UsersIndex({
     ];
 
     return (
-        <AuthenticatedLayout title="Master Pengguna & RBAC">
-            <Head title="Pengguna & Hak Akses — Master Summit" />
+        <>
+            <Head title="Master Pengguna" />
 
             <div className="space-y-4">
                 {/* Header Title & Primary Action */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-zinc-200/70">
-                    <div>
-                        <h2 className="text-base font-semibold text-zinc-900 tracking-tight">
-                            Manajemen Pengguna & Matriks Hak Akses
-                        </h2>
-                        <p className="text-xs text-zinc-500 mt-0.5">
-                            Pengaturan akun login, multi-role assignment, izin checklist granular per modul, dan stasiun scope sampel.
-                        </p>
-                    </div>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-zinc-200">
+                    <h1 className="text-xl font-bold text-zinc-900 tracking-tight">
+                        Master Pengguna
+                    </h1>
 
                     <button
                         type="button"
                         onClick={openCreateModal}
-                        className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-zinc-900 hover:bg-zinc-800 rounded-sm shadow-2xs transition-colors cursor-pointer shrink-0"
+                        className="inline-flex items-center justify-center gap-2 h-10 px-4 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-sm shadow-2xs transition-colors cursor-pointer shrink-0"
                     >
-                        <Plus className="w-3.5 h-3.5" />
-                        <span>Tambah Pengguna</span>
+                        <Plus className="w-4 h-4" />
+                        <span>Tambah Data</span>
                     </button>
                 </div>
 
                 {/* Filter Slot (Role filter selector) */}
                 <div className="flex items-center gap-2">
-                    <span className="text-xs text-zinc-500 font-medium">Filter Peran:</span>
+                    <span className="text-sm text-zinc-600 font-medium">Filter Peran:</span>
                     <select
                         value={filters.role || ''}
                         onChange={(e) => handleRoleFilterChange(e.target.value)}
-                        className="px-2.5 py-1 text-xs bg-white border border-zinc-200/90 rounded-sm text-zinc-800 focus:outline-none focus:ring-1 focus:ring-zinc-400"
+                        className="h-10 px-3 text-sm bg-white border border-zinc-200 rounded-sm text-zinc-800 focus:outline-none focus:ring-1 focus:ring-zinc-400"
                     >
                         <option value="">Semua Peran</option>
                         {availableRoles.map((r) => (
@@ -719,6 +713,6 @@ export default function UsersIndex({
                     )}
                 </div>
             </Modal>
-        </AuthenticatedLayout>
+        </>
     );
 }

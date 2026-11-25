@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import Badge from '@/Components/Badge';
 import ActionDropdown, { ActionDropdownItem } from '@/Components/ActionDropdown';
 import Modal from '@/Components/Modal';
@@ -438,49 +437,49 @@ export default function ServiceParameters({
     };
 
     return (
-        <AuthenticatedLayout>
+        <>
             <Head title={`Parameter: ${service.name} (${service.code})`} />
 
             <div className="space-y-6">
                 {/* Header with Breadcrumb and Service Info */}
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-zinc-200/80">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pb-3 border-b border-zinc-200">
                     <div className="space-y-1">
-                        <div className="flex items-center gap-2 text-xs text-zinc-500">
+                        <div className="flex items-center gap-2 text-sm text-zinc-500">
                             <Link
                                 href={route('services.index')}
                                 className="hover:text-zinc-900 transition-colors flex items-center gap-1 font-medium"
                             >
-                                <ArrowLeft className="w-3.5 h-3.5" />
+                                <ArrowLeft className="w-4 h-4" />
                                 Master Pemeriksaan
                             </Link>
                             <span>/</span>
                             <span className="font-mono text-zinc-700">{service.code}</span>
                             <span>/</span>
-                            <span className="text-zinc-800 font-semibold">Parameter & Aturan Evaluasi</span>
+                            <span className="text-zinc-900 font-semibold">Parameter</span>
                         </div>
                         <h1 className="text-xl font-bold tracking-tight text-zinc-900 flex items-center gap-2">
                             {service.name}
-                            <span className="text-xs font-mono font-medium text-zinc-500 bg-zinc-100 px-2 py-0.5 rounded border border-zinc-200/80">
+                            <span className="text-xs font-mono font-medium text-zinc-500 bg-zinc-100 px-2.5 py-1 rounded-sm border border-zinc-200">
                                 {service.code}
                             </span>
                         </h1>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
                         <Link
                             href={route('services.index')}
-                            className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-zinc-600 bg-white border border-zinc-200 rounded-md hover:bg-zinc-50 transition-colors shadow-xs"
+                            className="inline-flex items-center justify-center gap-2 h-10 px-4 text-sm font-medium text-zinc-700 bg-white border border-zinc-200 rounded-sm hover:bg-zinc-50 transition-colors shadow-2xs"
                         >
-                            <ArrowLeft className="w-3.5 h-3.5" />
+                            <ArrowLeft className="w-4 h-4" />
                             Kembali
                         </Link>
                         <button
                             type="button"
                             onClick={openCreateParamModal}
-                            className="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-zinc-900 rounded-md hover:bg-zinc-800 transition-colors shadow-xs"
+                            className="inline-flex items-center justify-center gap-2 h-10 px-4 text-sm font-semibold text-white bg-emerald-600 rounded-sm hover:bg-emerald-700 transition-colors shadow-2xs cursor-pointer"
                         >
-                            <Plus className="w-3.5 h-3.5" />
-                            Tambah Parameter
+                            <Plus className="w-4 h-4" />
+                            Tambah Data
                         </button>
                     </div>
                 </div>
@@ -1457,6 +1456,6 @@ export default function ServiceParameters({
                     </div>
                 </form>
             </Modal>
-        </AuthenticatedLayout>
+        </>
     );
 }

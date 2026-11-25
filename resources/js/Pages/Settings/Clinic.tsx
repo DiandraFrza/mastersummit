@@ -1,6 +1,5 @@
 import React, { useState, useRef } from 'react';
 import { Head, useForm } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import {
     Building2,
     UploadCloud,
@@ -90,24 +89,19 @@ export default function ClinicSettingPage({ setting }: ClinicSettingProps) {
     };
 
     return (
-        <AuthenticatedLayout title="Pengaturan Klinik & Kop Surat">
-            <Head title="Pengaturan Klinik & Kop Surat — Master Summit" />
+        <>
+            <Head title="Pengaturan Klinik" />
 
             <div className="space-y-6">
                 {/* Header Title */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-zinc-200/70">
-                    <div>
-                        <h2 className="text-base font-semibold text-zinc-900 tracking-tight">
-                            Pengaturan Klinik & Kop Surat HVS
-                        </h2>
-                        <p className="text-xs text-zinc-500 mt-0.5">
-                            Konfigurasi identitas klinik, watermark transparan, ukuran kertas cetak, dan preview kop surat otomatis.
-                        </p>
-                    </div>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-zinc-200">
+                    <h1 className="text-xl font-bold text-zinc-900 tracking-tight">
+                        Pengaturan Klinik
+                    </h1>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
                         {isDirty && (
-                            <span className="text-[11px] text-amber-600 bg-amber-50 px-2 py-0.5 rounded-sm">
+                            <span className="text-xs text-amber-600 bg-amber-50 px-2.5 py-1 rounded-sm border border-amber-200 font-medium">
                                 Perubahan belum disimpan
                             </span>
                         )}
@@ -115,11 +109,11 @@ export default function ClinicSettingPage({ setting }: ClinicSettingProps) {
                             type="button"
                             onClick={handleSubmit}
                             disabled={processing}
-                            className="inline-flex items-center justify-center gap-1.5 px-4 py-1.5 text-xs font-semibold text-white bg-zinc-900 hover:bg-zinc-800 disabled:opacity-50 rounded-sm shadow-2xs transition-colors cursor-pointer"
+                            className="inline-flex items-center justify-center gap-2 h-10 px-4 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 rounded-sm shadow-2xs transition-colors cursor-pointer"
                         >
                             {processing ? (
                                 <>
-                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                    <Loader2 className="w-4 h-4 animate-spin" />
                                     <span>Menyimpan...</span>
                                 </>
                             ) : (
@@ -586,6 +580,6 @@ export default function ClinicSettingPage({ setting }: ClinicSettingProps) {
                     </div>
                 </div>
             </div>
-        </AuthenticatedLayout>
+        </>
     );
 }

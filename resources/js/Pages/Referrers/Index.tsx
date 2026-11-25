@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Head, router, useForm } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import DataTable, { ColumnDef } from '@/Components/DataTable';
 import Badge from '@/Components/Badge';
 import ActionDropdown, { ActionDropdownItem } from '@/Components/ActionDropdown';
@@ -208,36 +207,24 @@ export default function ReferrersIndex({
     ];
 
     return (
-        <AuthenticatedLayout
-            title="Master Perujuk & Dokter Rujukan"
-            breadcrumb={[
-                { label: 'Data Master' },
-                { label: 'Perujuk' },
-            ]}
-        >
+        <>
             <Head title="Master Perujuk" />
 
             <div className="space-y-4">
                 {/* Header Action Bar */}
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white p-4 rounded-md border border-zinc-200/80">
-                    <div>
-                        <h1 className="text-base font-semibold text-zinc-900 flex items-center gap-2">
-                            <Share2 className="w-5 h-5 text-teal-600" />
-                            <span>Master Dokter & Faskes Perujuk</span>
-                        </h1>
-                        <p className="text-xs text-zinc-500 mt-0.5">
-                            Dokter pengirim, puskesmas, klinik jejaring, komisi rujukan, dan catatan marketing.
-                        </p>
-                    </div>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-zinc-200">
+                    <h1 className="text-xl font-bold text-zinc-900 tracking-tight">
+                        Master Perujuk
+                    </h1>
 
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-3">
                         {/* Type Filter Select */}
                         <select
                             value={filters.type_id || ''}
                             onChange={(e) => handleFilterChange('type_id', e.target.value)}
-                            className="text-xs px-2.5 py-1.5 bg-white border border-zinc-200/80 rounded-md text-zinc-700 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                            className="h-10 px-3 text-sm bg-white border border-zinc-200 rounded-sm text-zinc-800 focus:outline-none focus:ring-1 focus:ring-zinc-400"
                         >
-                            <option value="">Semua Kategori Perujuk</option>
+                            <option value="">Semua Kategori</option>
                             {referrerTypes.map((t) => (
                                 <option key={t.id} value={t.id}>
                                     {t.name}
@@ -246,13 +233,13 @@ export default function ReferrersIndex({
                         </select>
 
                         {/* Status Filter Tab Pills */}
-                        <div className="flex items-center bg-zinc-100 p-0.5 rounded-md border border-zinc-200/80 text-xs">
+                        <div className="flex items-center bg-zinc-100 p-0.5 rounded-sm border border-zinc-200 text-sm">
                             <button
                                 type="button"
                                 onClick={() => handleFilterChange('status', 'all')}
-                                className={`px-2.5 py-1 rounded font-medium transition-colors ${
+                                className={`h-9 px-3 rounded-sm font-medium transition-colors ${
                                     (filters.status || 'all') === 'all'
-                                        ? 'bg-white text-zinc-900 shadow-xs'
+                                        ? 'bg-white text-zinc-900 shadow-2xs'
                                         : 'text-zinc-600 hover:text-zinc-900'
                                 }`}
                             >
@@ -261,9 +248,9 @@ export default function ReferrersIndex({
                             <button
                                 type="button"
                                 onClick={() => handleFilterChange('status', 'active')}
-                                className={`px-2.5 py-1 rounded font-medium transition-colors ${
+                                className={`h-9 px-3 rounded-sm font-medium transition-colors ${
                                     filters.status === 'active'
-                                        ? 'bg-white text-emerald-700 shadow-xs'
+                                        ? 'bg-white text-zinc-900 shadow-2xs'
                                         : 'text-zinc-600 hover:text-zinc-900'
                                 }`}
                             >
@@ -272,23 +259,23 @@ export default function ReferrersIndex({
                             <button
                                 type="button"
                                 onClick={() => handleFilterChange('status', 'inactive')}
-                                className={`px-2.5 py-1 rounded font-medium transition-colors ${
+                                className={`h-9 px-3 rounded-sm font-medium transition-colors ${
                                     filters.status === 'inactive'
-                                        ? 'bg-white text-zinc-700 shadow-xs'
+                                        ? 'bg-white text-zinc-900 shadow-2xs'
                                         : 'text-zinc-600 hover:text-zinc-900'
                                 }`}
                             >
-                                Non-Aktif
+                                Nonaktif
                             </button>
                         </div>
 
                         <button
                             type="button"
                             onClick={openCreateModal}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-teal-600 hover:bg-teal-700 active:bg-teal-800 rounded-md transition-colors shadow-xs"
+                            className="inline-flex items-center justify-center gap-2 h-10 px-4 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-sm shadow-2xs transition-colors cursor-pointer shrink-0"
                         >
                             <Plus className="w-4 h-4" />
-                            <span>Tambah Perujuk</span>
+                            <span>Tambah Data</span>
                         </button>
                     </div>
                 </div>
@@ -518,6 +505,6 @@ export default function ReferrersIndex({
                     </div>
                 </form>
             </Modal>
-        </AuthenticatedLayout>
+        </>
     );
 }

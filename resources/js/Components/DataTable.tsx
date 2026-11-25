@@ -58,74 +58,54 @@ export default function DataTable<T extends Record<string, any>>({
 }: DataTableProps<T>) {
     // Normalize data and pagination
     const paginationData: Pagination<T> = Array.isArray(data)
-        ? (pagination || {
-            data: data,
-            current_page: 1,
-            last_page: 1,
-            per_page: data.length || 10,
-            total: data.length,
-            from: data.length > 0 ? 1 : 0,
-            to: data.length,
-            links: [],
-        })
-        : (data || {
-            data: [],
-            current_page: 1,
-            last_page: 1,
-            per_page: 10,
-            total: 0,
-            from: 0,
-            to: 0,
-            links: [],
-        });
+        ? pagination || {
+              data: data,
+              current_page: 1,
+              first_page_url: '',
+              from: data.length > 0 ? 1 : 0,
+              last_page: 1,
+              last_page_url: '',
+              links: [],
+              next_page_url: null,
+              path: '',
+              per_page: data.length,
+              prev_page_url: null,
+              to: data.length,
+              total: data.length,
+          }
+        : data;
 
-    const items: T[] = Array.isArray(data) ? data : (data?.data || []);
-    const resolvedEmptyText = emptyMessage || emptyText || 'Tidak ada data ditemukan.';
+    const items = paginationData.data || [];
+    const isVirtual = paginationData.per_page >= 100 && items.length >= 100;
 
-    const [search, setSearch] = useState<string>(filters.search || '');
+    const [search, setSearch] = useState(filters.search || '');
     const [isPending, startTransition] = useTransition();
-    const isFirstMount = useRef(true);
     const parentRef = useRef<HTMLDivElement>(null);
+    const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-    // Entries selector options per requirements
+    const resolvedEmptyText = emptyText || emptyMessage || 'Tidak ada data ditemukan.';
     const perPageOptions = [10, 20, 50, 100, 300, 500];
-    const isVirtual = (paginationData.per_page || 10) >= 100;
 
-    // Debounced search (300ms)
-    useEffect(() => {
-        if (isFirstMount.current) {
-            isFirstMount.current = false;
-            return;
-        }
-
-        const timer = setTimeout(() => {
-            if (search !== (filters.search || '')) {
-                updateQuery({ search, page: 1 });
-            }
-        }, 300);
-
-        return () => clearTimeout(timer);
-    }, [search]);
-
+    // Smart URL query updater
     const updateQuery = (newParams: Record<string, any>) => {
-        const currentUrl = routeName ? route(routeName) : window.location.pathname;
-        const currentParams = new URLSearchParams(window.location.search);
-        const merged: Record<string, any> = {};
+        const mergedParams: Record<string, any> = {
+            ...filters,
+            ...newParams,
+        };
 
-        currentParams.forEach((val, key) => {
-            merged[key] = val;
-        });
-
-        Object.entries(newParams).forEach(([k, v]) => {
-            if (v === '' || v === null || v === undefined) {
-                delete merged[k];
-            } else {
-                merged[k] = v;
+        // Remove empty keys
+        Object.keys(mergedParams).forEach((key) => {
+            if (mergedParams[key] === '' || mergedParams[key] === null || mergedParams[key] === undefined || mergedParams[key] === 'all') {
+                delete mergedParams[key];
             }
         });
+
+        const currentUrl = routeName
+            ? route(routeName, routeParams)
+            : window.location.pathname;
 
         startTransition(() => {
-            router.get(currentUrl, merged, {
+            router.get(currentUrl, mergedParams, {
                 preserveState: true,
                 preserveScroll: true,
                 replace: true,
@@ -133,20 +113,53 @@ export default function DataTable<T extends Record<string, any>>({
         });
     };
 
+    // Debounced search (300ms)
+    useEffect(() => {
+        if (search === (filters.search || '')) return;
+
+        if (searchTimeoutRef.current) {
+            clearTimeout(searchTimeoutRef.current);
+        }
+
+        searchTimeoutRef.current = setTimeout(() => {
+            updateQuery({ search, page: 1 });
+        }, 300);
+
+        return () => {
+            if (searchTimeoutRef.current) {
+                clearTimeout(searchTimeoutRef.current);
+            }
+        };
+    }, [search]);
+
     const handleSort = (columnKey: string) => {
         const currentSort = filters.sort;
         const currentDir = filters.direction || 'asc';
 
-        let newDir = 'asc';
+        let nextSort: string | undefined = columnKey;
+        let nextDir: string | undefined = 'asc';
+
         if (currentSort === columnKey) {
-            newDir = currentDir === 'asc' ? 'desc' : 'asc';
+            if (currentDir === 'asc') {
+                nextDir = 'desc';
+            } else {
+                nextSort = undefined;
+                nextDir = undefined;
+            }
         }
 
-        updateQuery({ sort: columnKey, direction: newDir, page: 1 });
+        updateQuery({
+            sort: nextSort,
+            direction: nextDir,
+            page: 1,
+        });
     };
 
     const handlePerPageChange = (newPerPage: number) => {
-        updateQuery({ per_page: newPerPage, page: 1 });
+        updateQuery({
+            per_page: newPerPage,
+            page: 1,
+        });
     };
 
     const handleReset = () => {
@@ -165,7 +178,7 @@ export default function DataTable<T extends Record<string, any>>({
     const rowVirtualizer = useVirtualizer({
         count: items.length,
         getScrollElement: () => parentRef.current,
-        estimateSize: () => 41,
+        estimateSize: () => 52,
         overscan: 10,
         enabled: isVirtual,
     });
@@ -185,70 +198,74 @@ export default function DataTable<T extends Record<string, any>>({
     };
 
     return (
-        <div className="bg-white border border-zinc-200/80 rounded-md overflow-hidden flex flex-col">
+        <div className="bg-white border border-zinc-200/90 rounded-md overflow-hidden flex flex-col shadow-xs">
             {/* Table Control Bar */}
-            <div className="p-3.5 border-b border-zinc-200/70 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white">
+            <div className="p-4 border-b border-zinc-200/80 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3.5 bg-white">
                 {/* Search & Reset */}
                 <div className="flex items-center gap-2 flex-1 max-w-md">
-                    <div className="relative flex-1">
-                        <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none" />
-                        <input
-                            type="text"
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            placeholder={searchPlaceholder}
-                            className="w-full pl-9 pr-8 py-1.5 text-xs bg-zinc-50 border border-zinc-200/90 rounded-sm focus:bg-white focus:outline-none focus:ring-1 focus:ring-zinc-400 focus:border-zinc-400 placeholder:text-zinc-400 transition-colors"
-                        />
-                        {isPending && (
-                            <Loader2 className="w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 animate-spin" />
-                        )}
-                    </div>
+                    {searchable && (
+                        <div className="relative flex-1">
+                            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none" />
+                            <input
+                                type="text"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                placeholder={searchPlaceholder}
+                                className="w-full h-10 pl-10 pr-9 text-sm bg-zinc-50 border border-zinc-200 rounded-md focus:bg-white focus:outline-none focus:ring-1 focus:ring-zinc-400 focus:border-zinc-400 placeholder:text-zinc-400 transition-colors"
+                            />
+                            {isPending && (
+                                <Loader2 className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 animate-spin" />
+                            )}
+                        </div>
+                    )}
 
                     {(search || filters.sort || Object.keys(filters).some((k) => !['page', 'per_page', 'sort', 'direction', 'search'].includes(k) && filters[k])) && (
                         <button
                             type="button"
                             onClick={handleReset}
                             title="Reset filter & pencarian"
-                            className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-zinc-600 bg-zinc-100 hover:bg-zinc-200 rounded-sm transition-colors shrink-0"
+                            className="inline-flex items-center gap-1.5 h-10 px-3.5 text-sm font-medium text-zinc-700 bg-zinc-100 hover:bg-zinc-200 rounded-md transition-colors shrink-0"
                         >
-                            <RotateCcw className="w-3 h-3 text-zinc-500" />
+                            <RotateCcw className="w-4 h-4 text-zinc-500" />
                             <span>Reset</span>
                         </button>
                     )}
                 </div>
 
                 {/* Slot Filters, Actions & Entries */}
-                <div className="flex items-center flex-wrap gap-2 justify-end">
+                <div className="flex items-center flex-wrap gap-2.5 justify-end">
                     {filterSlot}
 
                     {actionsSlot}
 
                     {/* Entries Selector */}
-                    <div className="flex items-center gap-1.5 text-xs text-zinc-500 pl-1 border-l border-zinc-200/80">
-                        <span className="hidden md:inline">Tampilkan</span>
-                        <select
-                            value={data.per_page}
-                            onChange={(e) => handlePerPageChange(Number(e.target.value))}
-                            className="px-2 py-1 text-xs tabular-nums bg-white border border-zinc-200/90 rounded-sm focus:outline-none focus:ring-1 focus:ring-zinc-400 font-medium text-zinc-800"
-                        >
-                            {perPageOptions.map((opt) => (
-                                <option key={opt} value={opt}>
-                                    {opt}
-                                </option>
-                            ))}
-                        </select>
-                        <span className="hidden md:inline">baris</span>
-                    </div>
+                    {filterable && (
+                        <div className="flex items-center gap-2 text-sm text-zinc-600 pl-2 border-l border-zinc-200/80">
+                            <span className="hidden md:inline font-medium">Tampilkan</span>
+                            <select
+                                value={data.per_page}
+                                onChange={(e) => handlePerPageChange(Number(e.target.value))}
+                                className="h-10 px-3 text-sm tabular-nums bg-white border border-zinc-200 rounded-md focus:outline-none focus:ring-1 focus:ring-zinc-400 font-semibold text-zinc-800"
+                            >
+                                {perPageOptions.map((opt) => (
+                                    <option key={opt} value={opt}>
+                                        {opt}
+                                    </option>
+                                ))}
+                            </select>
+                            <span className="hidden md:inline text-zinc-500">baris</span>
+                        </div>
+                    )}
                 </div>
             </div>
 
             {/* Table Container (Engages Virtualization Scroll Container when per_page >= 100) */}
             <div
                 ref={parentRef}
-                className={`w-full overflow-x-auto ${isVirtual ? 'max-h-[600px] overflow-y-auto' : ''}`}
+                className={`w-full overflow-x-auto ${isVirtual ? 'max-h-[650px] overflow-y-auto' : ''}`}
             >
-                <table className="w-full border-collapse text-left text-xs">
-                    <thead className="sticky top-0 z-10 bg-zinc-50/95 backdrop-blur-xs border-b border-zinc-200/80">
+                <table className="w-full border-collapse text-left text-sm">
+                    <thead className="sticky top-0 z-10 bg-zinc-50/95 backdrop-blur-xs border-b border-zinc-200">
                         <tr>
                             {columns.map((col, idx) => {
                                 const colKey = (col.accessorKey || col.id || idx).toString();
@@ -260,7 +277,7 @@ export default function DataTable<T extends Record<string, any>>({
                                         key={idx}
                                         style={{ width: col.width }}
                                         onClick={() => col.sortable && handleSort(colKey)}
-                                        className={`py-2.5 px-3 font-semibold text-zinc-700 select-none text-[11px] tracking-tight uppercase whitespace-nowrap ${
+                                        className={`py-3.5 px-4 font-semibold text-zinc-600 select-none text-xs tracking-wider uppercase whitespace-nowrap ${
                                             getAlignmentClass(col.align)
                                         } ${col.sortable ? 'cursor-pointer hover:bg-zinc-100/80 transition-colors' : ''} ${
                                             col.className || ''
@@ -272,12 +289,12 @@ export default function DataTable<T extends Record<string, any>>({
                                                 <span className="text-zinc-400">
                                                     {isSorted ? (
                                                         sortDir === 'asc' ? (
-                                                            <ChevronUp className="w-3.5 h-3.5 text-zinc-900" />
+                                                            <ChevronUp className="w-4 h-4 text-zinc-900" />
                                                         ) : (
-                                                            <ChevronDown className="w-3.5 h-3.5 text-zinc-900" />
+                                                            <ChevronDown className="w-4 h-4 text-zinc-900" />
                                                         )
                                                     ) : (
-                                                        <ChevronsUpDown className="w-3 h-3 text-zinc-300 hover:text-zinc-500" />
+                                                        <ChevronsUpDown className="w-3.5 h-3.5 text-zinc-300 hover:text-zinc-500" />
                                                     )}
                                                 </span>
                                             )}
@@ -309,7 +326,7 @@ export default function DataTable<T extends Record<string, any>>({
                                             width: '100%',
                                             transform: `translateY(${virtualRow.start}px)`,
                                         }}
-                                        className="hover:bg-zinc-50/70 transition-colors"
+                                        className="even:bg-zinc-50/70 hover:bg-zinc-100/70 transition-colors"
                                     >
                                         {columns.map((col, colIdx) => {
                                             const cellValue = getCellValue(row, col.accessorKey);
@@ -317,7 +334,7 @@ export default function DataTable<T extends Record<string, any>>({
                                                 <td
                                                     key={colIdx}
                                                     style={{ width: col.width }}
-                                                    className={`py-2 px-3 text-zinc-700 whitespace-nowrap ${
+                                                    className={`py-3.5 px-4 text-zinc-800 whitespace-nowrap ${
                                                         getAlignmentClass(col.align)
                                                     } ${col.isNumeric ? 'tabular-nums' : ''} ${col.className || ''}`}
                                                 >
@@ -337,7 +354,7 @@ export default function DataTable<T extends Record<string, any>>({
                                 items.map((row, rowIdx) => (
                                     <tr
                                         key={rowIdx}
-                                        className="hover:bg-zinc-50/70 transition-colors group"
+                                        className="even:bg-zinc-50/70 hover:bg-zinc-100/70 transition-colors group"
                                     >
                                         {columns.map((col, colIdx) => {
                                             const cellValue = getCellValue(row, col.accessorKey);
@@ -345,7 +362,7 @@ export default function DataTable<T extends Record<string, any>>({
                                                 <td
                                                     key={colIdx}
                                                     style={{ width: col.width }}
-                                                    className={`py-2 px-3 text-zinc-700 whitespace-nowrap ${
+                                                    className={`py-3.5 px-4 text-zinc-800 whitespace-nowrap ${
                                                         getAlignmentClass(col.align)
                                                     } ${col.isNumeric ? 'tabular-nums' : ''} ${col.className || ''}`}
                                                 >
@@ -361,7 +378,7 @@ export default function DataTable<T extends Record<string, any>>({
                                 <tr>
                                     <td
                                         colSpan={columns.length}
-                                        className="py-12 text-center text-xs text-zinc-400 font-medium"
+                                        className="py-16 text-center text-sm text-zinc-400 font-medium"
                                     >
                                         {resolvedEmptyText}
                                     </td>
@@ -373,24 +390,25 @@ export default function DataTable<T extends Record<string, any>>({
             </div>
 
             {/* Pagination Footer */}
-            <div className="px-4 py-3 border-t border-zinc-200/70 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs bg-white">
-                <div className="text-zinc-500 tabular-nums">
-                    Menampilkan <span className="font-semibold text-zinc-800">{paginationData.from ?? 0}</span> sampai{' '}
-                    <span className="font-semibold text-zinc-800">{paginationData.to ?? 0}</span> dari{' '}
-                    <span className="font-semibold text-zinc-800">{paginationData.total}</span> total data
+            <div className="px-5 py-3.5 border-t border-zinc-200/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm bg-white">
+                <div className="text-zinc-600 tabular-nums">
+                    Menampilkan <span className="font-semibold text-zinc-900">{paginationData.from ?? 0}</span> sampai{' '}
+                    <span className="font-semibold text-zinc-900">{paginationData.to ?? 0}</span> dari{' '}
+                    <span className="font-semibold text-zinc-900">{paginationData.total}</span> data
                 </div>
 
                 {paginationData.last_page > 1 && (
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1.5">
                         {/* Prev Button */}
                         <button
                             type="button"
                             disabled={!paginationData.prev_page_url}
                             onClick={() => paginationData.prev_page_url && updateQuery({ page: paginationData.current_page - 1 })}
-                            className="inline-flex items-center justify-center p-1.5 text-zinc-600 bg-white border border-zinc-200/90 rounded-sm hover:bg-zinc-50 hover:text-zinc-900 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                            className="inline-flex items-center justify-center h-9 px-3 text-sm font-medium text-zinc-700 bg-white border border-zinc-200 rounded-md hover:bg-zinc-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                             title="Halaman Sebelumnya"
                         >
-                            <ChevronLeft className="w-3.5 h-3.5" />
+                            <ChevronLeft className="w-4 h-4" />
+                            <span className="sr-only">Sebelumnya</span>
                         </button>
 
                         {/* Page Numbers */}
@@ -398,29 +416,25 @@ export default function DataTable<T extends Record<string, any>>({
                             .filter((link) => !link.label.includes('Previous') && !link.label.includes('Next'))
                             .map((link, idx) => {
                                 const isCurrent = link.active;
-                                const isEllipsis = link.label === '...';
-
-                                if (isEllipsis) {
-                                    return (
-                                        <span key={idx} className="px-2 py-1 text-zinc-400">
-                                            ...
-                                        </span>
-                                    );
-                                }
-
                                 return (
                                     <button
                                         key={idx}
                                         type="button"
-                                        onClick={() => updateQuery({ page: Number(link.label) })}
-                                        className={`min-w-[28px] h-7 px-2 text-xs tabular-nums font-medium rounded-sm border transition-colors ${
+                                        disabled={isCurrent || !link.url}
+                                        onClick={() => {
+                                            if (link.url) {
+                                                const url = new URL(link.url, window.location.origin);
+                                                const targetPage = url.searchParams.get('page');
+                                                if (targetPage) updateQuery({ page: Number(targetPage) });
+                                            }
+                                        }}
+                                        className={`inline-flex items-center justify-center h-9 min-w-9 px-2.5 text-sm tabular-nums rounded-md font-medium transition-colors ${
                                             isCurrent
-                                                ? 'bg-zinc-900 text-white border-zinc-900'
-                                                : 'bg-white text-zinc-700 border-zinc-200/90 hover:bg-zinc-50 hover:text-zinc-900'
+                                                ? 'bg-zinc-900 text-white font-semibold'
+                                                : 'text-zinc-700 bg-white border border-zinc-200 hover:bg-zinc-50'
                                         }`}
-                                    >
-                                        {link.label}
-                                    </button>
+                                        dangerouslySetInnerHTML={{ __html: link.label }}
+                                    />
                                 );
                             })}
 
@@ -429,10 +443,11 @@ export default function DataTable<T extends Record<string, any>>({
                             type="button"
                             disabled={!paginationData.next_page_url}
                             onClick={() => paginationData.next_page_url && updateQuery({ page: paginationData.current_page + 1 })}
-                            className="inline-flex items-center justify-center p-1.5 text-zinc-600 bg-white border border-zinc-200/90 rounded-sm hover:bg-zinc-50 hover:text-zinc-900 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                            className="inline-flex items-center justify-center h-9 px-3 text-sm font-medium text-zinc-700 bg-white border border-zinc-200 rounded-md hover:bg-zinc-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                             title="Halaman Berikutnya"
                         >
-                            <ChevronRight className="w-3.5 h-3.5" />
+                            <ChevronRight className="w-4 h-4" />
+                            <span className="sr-only">Berikutnya</span>
                         </button>
                     </div>
                 )}

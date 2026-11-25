@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Head, router, useForm } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import DataTable, { ColumnDef } from '@/Components/DataTable';
 import Badge from '@/Components/Badge';
 import ActionDropdown, { ActionDropdownItem } from '@/Components/ActionDropdown';
@@ -185,37 +184,25 @@ export default function VendorsIndex({ vendors, filters }: VendorsIndexProps) {
     ];
 
     return (
-        <AuthenticatedLayout
-            title="Vendor & Rekanan Eksternal"
-            breadcrumb={[
-                { label: 'Data Master' },
-                { label: 'Vendor & Rekanan' },
-            ]}
-        >
-            <Head title="Master Vendor & Rekanan" />
+        <>
+            <Head title="Master Vendor" />
 
             <div className="space-y-4">
                 {/* Header Action Bar */}
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white p-4 rounded-md border border-zinc-200/80">
-                    <div>
-                        <h1 className="text-base font-semibold text-zinc-900 flex items-center gap-2">
-                            <Truck className="w-5 h-5 text-teal-600" />
-                            <span>Master Vendor, Rekanan Lab & PKS Alat</span>
-                        </h1>
-                        <p className="text-xs text-zinc-500 mt-0.5">
-                            Mitra laboratorium rujukan luar, vendor reagen, KSO alat diagnostik, dan kontrak kerjasama.
-                        </p>
-                    </div>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-zinc-200">
+                    <h1 className="text-xl font-bold text-zinc-900 tracking-tight">
+                        Master Vendor
+                    </h1>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
                         {/* Status Filter Tab Pills */}
-                        <div className="flex items-center bg-zinc-100 p-0.5 rounded-md border border-zinc-200/80 text-xs">
+                        <div className="flex items-center bg-zinc-100 p-0.5 rounded-sm border border-zinc-200 text-sm">
                             <button
                                 type="button"
                                 onClick={() => handleStatusFilterChange('all')}
-                                className={`px-2.5 py-1 rounded font-medium transition-colors ${
+                                className={`h-9 px-3 rounded-sm font-medium transition-colors ${
                                     (filters.status || 'all') === 'all'
-                                        ? 'bg-white text-zinc-900 shadow-xs'
+                                        ? 'bg-white text-zinc-900 shadow-2xs'
                                         : 'text-zinc-600 hover:text-zinc-900'
                                 }`}
                             >
@@ -224,9 +211,9 @@ export default function VendorsIndex({ vendors, filters }: VendorsIndexProps) {
                             <button
                                 type="button"
                                 onClick={() => handleStatusFilterChange('active')}
-                                className={`px-2.5 py-1 rounded font-medium transition-colors ${
+                                className={`h-9 px-3 rounded-sm font-medium transition-colors ${
                                     filters.status === 'active'
-                                        ? 'bg-white text-emerald-700 shadow-xs'
+                                        ? 'bg-white text-zinc-900 shadow-2xs'
                                         : 'text-zinc-600 hover:text-zinc-900'
                                 }`}
                             >
@@ -235,23 +222,23 @@ export default function VendorsIndex({ vendors, filters }: VendorsIndexProps) {
                             <button
                                 type="button"
                                 onClick={() => handleStatusFilterChange('inactive')}
-                                className={`px-2.5 py-1 rounded font-medium transition-colors ${
+                                className={`h-9 px-3 rounded-sm font-medium transition-colors ${
                                     filters.status === 'inactive'
-                                        ? 'bg-white text-zinc-700 shadow-xs'
+                                        ? 'bg-white text-zinc-900 shadow-2xs'
                                         : 'text-zinc-600 hover:text-zinc-900'
                                 }`}
                             >
-                                Non-Aktif
+                                Nonaktif
                             </button>
                         </div>
 
                         <button
                             type="button"
                             onClick={openCreateModal}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-teal-600 hover:bg-teal-700 active:bg-teal-800 rounded-md transition-colors shadow-xs"
+                            className="inline-flex items-center justify-center gap-2 h-10 px-4 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-sm shadow-2xs transition-colors cursor-pointer shrink-0"
                         >
                             <Plus className="w-4 h-4" />
-                            <span>Tambah Vendor</span>
+                            <span>Tambah Data</span>
                         </button>
                     </div>
                 </div>
@@ -434,6 +421,6 @@ export default function VendorsIndex({ vendors, filters }: VendorsIndexProps) {
                     </div>
                 </form>
             </Modal>
-        </AuthenticatedLayout>
+        </>
     );
 }

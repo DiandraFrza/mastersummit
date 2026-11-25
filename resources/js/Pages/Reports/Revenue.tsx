@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Head, router } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import DataTable, { ColumnDef } from '@/Components/DataTable';
 import Badge from '@/Components/Badge';
 import {
@@ -278,28 +277,24 @@ export default function Revenue({
     ];
 
     return (
-        <AuthenticatedLayout>
-            <Head title="Laporan Pendapatan Klinik" />
+        <>
+            <Head title="Laporan Pendapatan" />
 
             <div className="space-y-4">
                 {/* Header Title & Actions */}
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pb-3 border-b border-zinc-200/80">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pb-3 border-b border-zinc-200">
                     <div>
-                        <h1 className="text-lg font-bold tracking-tight text-zinc-900 flex items-center gap-2">
-                            <BarChart3 className="w-5 h-5 text-zinc-700" />
-                            Laporan Pendapatan Klinik
+                        <h1 className="text-xl font-bold tracking-tight text-zinc-900">
+                            Laporan Pendapatan
                         </h1>
-                        <p className="text-xs text-zinc-500 mt-0.5">
-                            Pemantauan arus kas masuk, rekapitulasi penerimaan per penjamin, dan status piutang tagihan.
-                        </p>
                     </div>
 
                     <div className="flex items-center gap-2">
                         <button
                             onClick={handleExportExcel}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-zinc-700 bg-white border border-zinc-300 hover:bg-zinc-50 rounded-md transition-colors shadow-xs"
+                            className="inline-flex items-center gap-2 h-10 px-4 text-sm font-semibold text-zinc-700 bg-white border border-zinc-200 hover:bg-zinc-50 rounded-md transition-colors shadow-xs"
                         >
-                            <Download className="w-3.5 h-3.5 text-emerald-600" />
+                            <Download className="w-4 h-4 text-emerald-600" />
                             <span>Ekspor Excel</span>
                         </button>
                     </div>
@@ -611,6 +606,6 @@ export default function Revenue({
                     </div>
                 )}
             </div>
-        </AuthenticatedLayout>
+        </>
     );
 }

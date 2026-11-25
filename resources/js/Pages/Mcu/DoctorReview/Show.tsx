@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import Badge from '@/Components/Badge';
 import {
     ArrowLeft,
@@ -130,16 +129,16 @@ export default function Show({
     };
 
     return (
-        <AuthenticatedLayout user={auth.user}>
+        <>
             <Head title={`Review Dokter MCU - ${registration.reg_no}`} />
 
             <div className="space-y-6 max-w-7xl mx-auto">
                 {/* Top Action Bar */}
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-3 border-b border-zinc-200">
                     <div className="flex items-center gap-3">
                         <Link
                             href={route('mcu.doctor-review.index')}
-                            className="p-2 rounded-lg border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-600 transition-colors"
+                            className="inline-flex h-10 w-10 items-center justify-center rounded-sm border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-600 transition-colors shadow-2xs"
                         >
                             <ArrowLeft className="w-4 h-4" />
                         </Link>
@@ -148,13 +147,10 @@ export default function Show({
                                 <h1 className="text-xl font-bold tracking-tight text-zinc-900">
                                     Review Dokter MCU
                                 </h1>
-                                <span className="font-mono text-sm font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">
+                                <span className="font-mono text-sm font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-sm border border-emerald-200">
                                     {registration.reg_no}
                                 </span>
                             </div>
-                            <p className="text-xs text-zinc-500 mt-0.5">
-                                Formulir verifikasi rekap kelainan klinis, penentuan kelaikan kerja, dan anjuran dokter spesialis/MCU.
-                            </p>
                         </div>
                     </div>
 
@@ -164,30 +160,30 @@ export default function Show({
                             href={route('prints.mcu-book', registration.id)}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-zinc-700 bg-white border border-zinc-300 rounded-lg hover:bg-zinc-50 transition-colors shadow-xs"
+                            className="inline-flex items-center gap-2 h-10 px-3.5 text-sm font-medium text-zinc-700 bg-white border border-zinc-200 rounded-sm hover:bg-zinc-50 transition-colors shadow-2xs"
                         >
-                            <Printer className="w-3.5 h-3.5 text-zinc-600" />
+                            <Printer className="w-4 h-4 text-zinc-600" />
                             Preview Buku MCU
                         </a>
                         <a
                             href={route('prints.mcu-book.pdf', registration.id) + '?download=1'}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-zinc-700 bg-white border border-zinc-300 rounded-lg hover:bg-zinc-50 transition-colors shadow-xs"
+                            className="inline-flex items-center gap-2 h-10 px-3.5 text-sm font-medium text-zinc-700 bg-white border border-zinc-200 rounded-sm hover:bg-zinc-50 transition-colors shadow-2xs"
                         >
-                            <Download className="w-3.5 h-3.5 text-zinc-600" />
+                            <Download className="w-4 h-4 text-zinc-600" />
                             Download PDF
                         </a>
 
                         {isLocked ? (
-                            <div className="flex items-center gap-2 px-3 py-1.5 bg-rose-50 border border-rose-200 rounded-lg text-rose-800 text-xs font-medium">
+                            <div className="flex items-center gap-2 h-10 px-3.5 bg-rose-50 border border-rose-200 rounded-sm text-rose-800 text-sm font-medium">
                                 <Lock className="w-4 h-4 text-rose-600 shrink-0" />
-                                <span>Terkunci (QC Pass)</span>
+                                <span>Terkunci</span>
                             </div>
                         ) : (
-                            <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-800 text-xs font-medium">
+                            <div className="flex items-center gap-2 h-10 px-3.5 bg-emerald-50 border border-emerald-200 rounded-sm text-emerald-800 text-sm font-medium">
                                 <Unlock className="w-4 h-4 text-emerald-600 shrink-0" />
-                                <span>Status Terbuka (Review Dokter)</span>
+                                <span>Status Terbuka</span>
                             </div>
                         )}
                     </div>
@@ -661,6 +657,6 @@ export default function Show({
                     </div>
                 </form>
             </div>
-        </AuthenticatedLayout>
+        </>
     );
 }

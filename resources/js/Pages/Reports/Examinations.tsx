@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Head, router } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import DataTable, { ColumnDef } from '@/Components/DataTable';
 import Badge from '@/Components/Badge';
 import {
@@ -260,28 +259,24 @@ export default function Examinations({
     ];
 
     return (
-        <AuthenticatedLayout>
-            <Head title="Laporan Rekapitulasi Pemeriksaan" />
+        <>
+            <Head title="Laporan Pemeriksaan" />
 
             <div className="space-y-4">
                 {/* Header Title & Actions */}
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pb-3 border-b border-zinc-200/80">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pb-3 border-b border-zinc-200">
                     <div>
-                        <h1 className="text-lg font-bold tracking-tight text-zinc-900 flex items-center gap-2">
-                            <FileSpreadsheet className="w-5 h-5 text-zinc-700" />
-                            Laporan Rekapitulasi Pemeriksaan
+                        <h1 className="text-xl font-bold tracking-tight text-zinc-900">
+                            Laporan Pemeriksaan
                         </h1>
-                        <p className="text-xs text-zinc-500 mt-0.5">
-                            Rincian item pemeriksaan pasien, agregasi volume layanan, dan realisasi hasil penunjang medis.
-                        </p>
                     </div>
 
                     <div className="flex items-center gap-2">
                         <button
                             onClick={handleExportExcel}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-zinc-700 bg-white border border-zinc-300 hover:bg-zinc-50 rounded-md transition-colors shadow-xs"
+                            className="inline-flex items-center gap-2 h-10 px-4 text-sm font-semibold text-zinc-700 bg-white border border-zinc-200 hover:bg-zinc-50 rounded-md transition-colors shadow-xs"
                         >
-                            <Download className="w-3.5 h-3.5 text-emerald-600" />
+                            <Download className="w-4 h-4 text-emerald-600" />
                             <span>Ekspor Excel</span>
                         </button>
                     </div>
@@ -542,6 +537,6 @@ export default function Examinations({
                     </div>
                 )}
             </div>
-        </AuthenticatedLayout>
+        </>
     );
 }
