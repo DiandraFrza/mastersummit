@@ -8,6 +8,9 @@ import AuthenticatedLayout from './Layouts/AuthenticatedLayout';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Master Summit';
 
+// Global persistent layout reference function (ensures same identity across all page transitions)
+const defaultLayout = (page: React.ReactNode) => <AuthenticatedLayout>{page}</AuthenticatedLayout>;
+
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
     resolve: (name) =>
@@ -17,7 +20,7 @@ createInertiaApp({
         ).then((module: any) => {
             if (module.default.layout === undefined) {
                 if (!name.startsWith('Auth/') && !name.startsWith('Portal/') && name !== 'Welcome') {
-                    module.default.layout = (page: React.ReactNode) => <AuthenticatedLayout>{page}</AuthenticatedLayout>;
+                    module.default.layout = defaultLayout;
                 }
             }
             return module;

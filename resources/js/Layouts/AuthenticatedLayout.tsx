@@ -75,6 +75,7 @@ export default function AuthenticatedLayout({
     breadcrumb = [],
 }: AuthenticatedLayoutProps) {
     const { auth, clinicSetting } = usePage<PageProps>().props;
+    const { url } = usePage();
     const user = auth?.user;
     const roles = auth?.roles || [];
     const permissions = auth?.permissions || [];
@@ -100,17 +101,10 @@ export default function AuthenticatedLayout({
         router.post(route('logout'));
     };
 
-    // Close mobile drawer on route navigation
-    useEffect(() => {
-        setIsMobileOpen(false);
-    }, [typeof window !== 'undefined' ? window.location.pathname : '']);
-
-    // Check if URL matches current path/query
+    // Check if URL matches current path/query using reactive Inertia url
     const isUrlActive = (href: string, exact = false): boolean => {
-        if (typeof window === 'undefined') return false;
-        const currentPath = window.location.pathname;
-        const currentSearch = window.location.search;
-        const fullCurrent = currentPath + currentSearch;
+        const [currentPath] = url.split('?');
+        const fullCurrent = url;
 
         if (exact) {
             return fullCurrent === href || currentPath === href;
@@ -359,7 +353,7 @@ export default function AuthenticatedLayout({
         return initial;
     });
 
-    // Auto expand accordion if current URL matches any sub-item
+    // Auto expand accordion if current URL matches any sub-item and close mobile drawer
     useEffect(() => {
         navigationGroups.forEach((group) => {
             group.items.forEach((item) => {
@@ -371,7 +365,8 @@ export default function AuthenticatedLayout({
                 }
             });
         });
-    }, [typeof window !== 'undefined' ? window.location.pathname + window.location.search : '']);
+        setIsMobileOpen(false);
+    }, [url]);
 
     const toggleDropdown = (itemName: string) => {
         setOpenDropdowns((prev) => ({
@@ -379,6 +374,31 @@ export default function AuthenticatedLayout({
             [itemName]: !prev[itemName],
         }));
     };
+
+    // Auto-detect active navigation item for clean breadcrumb fallback
+    let detectedBreadcrumb: Array<{ label: string; href?: string }> = [];
+    if (!breadcrumb.length && !title) {
+        for (const group of navigationGroups) {
+            for (const item of group.items) {
+                if (item.children) {
+                    const activeChild = item.children.find((c) => isUrlActive(c.href, c.exact));
+                    if (activeChild) {
+                        detectedBreadcrumb = [
+                            { label: item.name },
+                            { label: activeChild.name, href: activeChild.href },
+                        ];
+                        break;
+                    }
+                } else if (item.href && isUrlActive(item.href, item.exact) && item.href !== '/dashboard') {
+                    detectedBreadcrumb = [{ label: item.name, href: item.href }];
+                    break;
+                }
+            }
+            if (detectedBreadcrumb.length) break;
+        }
+    }
+
+    const effectiveBreadcrumbs = breadcrumb.length > 0 ? breadcrumb : detectedBreadcrumb;
 
     const renderNavContent = () => (
         <div className="flex flex-col h-full bg-white select-none">
@@ -559,7 +579,7 @@ export default function AuthenticatedLayout({
                                 {user?.name}
                             </div>
                             <div className="text-xs text-zinc-500 truncate">
-                                {roles[0] || 'Staff'}
+                                {roles[0] || 'Staf'}
                             </div>
                         </div>
                     )}
@@ -570,10 +590,10 @@ export default function AuthenticatedLayout({
 
     return (
         <div className="min-h-screen bg-zinc-50 flex">
-            {/* Desktop Sidebar */}
+            {/* Desktop Sidebar (Fixed/Sticky full height with internal scroll) */}
             <aside
                 className={`hidden lg:block border-r border-zinc-200/80 shrink-0 h-screen sticky top-0 transition-all duration-200 ease-in-out ${
-                    isCollapsed ? 'w-16' : 'w-64'
+                    isCollapsed ? 'w-16' : 'w-[264px] 2xl:w-[272px]'
                 }`}
             >
                 {renderNavContent()}
@@ -608,7 +628,7 @@ export default function AuthenticatedLayout({
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col min-w-0">
                 {/* Topbar */}
-                <header className="h-16 bg-white border-b border-zinc-200/80 px-5 flex items-center justify-between sticky top-0 z-20">
+                <header className="h-16 bg-white border-b border-zinc-200/80 px-4 md:px-6 2xl:px-8 flex items-center justify-between sticky top-0 z-20">
                     {/* Left: Mobile Toggle & Breadcrumbs */}
                     <div className="flex items-center gap-3">
                         <button
@@ -625,7 +645,7 @@ export default function AuthenticatedLayout({
                                 Dashboard
                             </Link>
 
-                            {breadcrumb.map((crumb, idx) => (
+                            {effectiveBreadcrumbs.map((crumb, idx) => (
                                 <React.Fragment key={idx}>
                                     <ChevronRight className="w-4 h-4 text-zinc-400 shrink-0" />
                                     {crumb.href ? (
@@ -640,7 +660,7 @@ export default function AuthenticatedLayout({
                                 </React.Fragment>
                             ))}
 
-                            {!breadcrumb.length && title && (
+                            {!effectiveBreadcrumbs.length && title && (
                                 <>
                                     <ChevronRight className="w-4 h-4 text-zinc-400 shrink-0" />
                                     <span className="text-zinc-800 font-semibold truncate max-w-[260px]">
@@ -659,7 +679,7 @@ export default function AuthenticatedLayout({
                                 {user?.name}
                             </span>
                             <span className="text-xs bg-zinc-100 text-zinc-600 px-2 py-0.5 rounded-md border border-zinc-200 font-medium">
-                                {roles[0] || 'User'}
+                                {roles[0] || 'Pengguna'}
                             </span>
                         </div>
 
@@ -675,8 +695,8 @@ export default function AuthenticatedLayout({
                     </div>
                 </header>
 
-                {/* Page Content Canvas */}
-                <main className="flex-1 p-5 lg:p-7 max-w-7xl w-full mx-auto">
+                {/* Page Content Canvas: Full-Width Fluid Layout without max-w-7xl constraint */}
+                <main className="flex-1 p-4 md:p-6 2xl:p-8 w-full max-w-none">
                     {children}
                 </main>
             </div>

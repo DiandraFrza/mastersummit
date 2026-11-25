@@ -176,7 +176,7 @@ export default function Dashboard({ stats, activities, filters }: DashboardProps
                         <div className="text-xl font-semibold text-zinc-900 tabular-nums">
                             {stats.total_users}
                         </div>
-                        <p className="text-[11px] text-zinc-400 mt-1">Akun login aktif terdaftar</p>
+                        <p className="text-[11px] text-zinc-400 mt-1">Akun login aktif</p>
                     </div>
 
                     <div className="bg-white border border-zinc-200/80 rounded-md p-4 shadow-2xs">
@@ -189,7 +189,7 @@ export default function Dashboard({ stats, activities, filters }: DashboardProps
                         <div className="text-xl font-semibold text-zinc-900 tabular-nums">
                             {stats.active_employees}
                         </div>
-                        <p className="text-[11px] text-zinc-400 mt-1">Dokter, analis, perawat & staff</p>
+                        <p className="text-[11px] text-zinc-400 mt-1">Dokter, analis & staf</p>
                     </div>
 
                     <div className="bg-white border border-zinc-200/80 rounded-md p-4 shadow-2xs">
@@ -202,7 +202,7 @@ export default function Dashboard({ stats, activities, filters }: DashboardProps
                         <div className="text-xl font-semibold text-zinc-900 tabular-nums">
                             {stats.total_roles}
                         </div>
-                        <p className="text-[11px] text-zinc-400 mt-1">Multi-role RBAC matrix</p>
+                        <p className="text-[11px] text-zinc-400 mt-1">Hak akses peran</p>
                     </div>
 
                     <div className="bg-white border border-zinc-200/80 rounded-md p-4 shadow-2xs">
@@ -215,7 +215,7 @@ export default function Dashboard({ stats, activities, filters }: DashboardProps
                         <div className="text-xl font-semibold text-zinc-900 tabular-nums">
                             {activities.total}
                         </div>
-                        <p className="text-[11px] text-zinc-400 mt-1">Rekaman aktivitas termonitor</p>
+                        <p className="text-[11px] text-zinc-400 mt-1">Log aktivitas</p>
                     </div>
                 </div>
 
@@ -226,9 +226,6 @@ export default function Dashboard({ stats, activities, filters }: DashboardProps
                             <h3 className="text-xs font-semibold text-zinc-900 uppercase tracking-wider">
                                 Audit Trail Aktivitas Sistem
                             </h3>
-                            <p className="text-[11px] text-zinc-500">
-                                Rekaman perubahan data transaksi dan master yang diverifikasi secara real-time.
-                            </p>
                         </div>
                     </div>
 
@@ -237,7 +234,7 @@ export default function Dashboard({ stats, activities, filters }: DashboardProps
                         data={activities}
                         columns={columns}
                         filters={filters}
-                        searchPlaceholder="Cari aktivitas, event, atau operator..."
+                        searchPlaceholder="Cari aktivitas..."
                         routeName="dashboard"
                     />
                 </div>
@@ -248,7 +245,6 @@ export default function Dashboard({ stats, activities, filters }: DashboardProps
                 isOpen={!!selectedLog}
                 onClose={() => setSelectedLog(null)}
                 title={`Detail Log Aktivitas #${selectedLog?.id}`}
-                subtitle="Informasi lengkap perubahan data dan operator"
                 maxWidth="md"
                 footer={
                     <button

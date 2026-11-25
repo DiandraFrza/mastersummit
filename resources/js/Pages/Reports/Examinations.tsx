@@ -462,7 +462,7 @@ export default function Examinations({
                             columns={columns}
                             data={items}
                             filters={filters}
-                            searchPlaceholder="Cari no. reg, nama pasien, atau nama layanan..."
+                            searchPlaceholder="Cari no. reg, nama..."
                             routeName="reports.examinations.index"
                             emptyMessage="Belum ada item pemeriksaan pada rentang tanggal dan filter ini."
                         />

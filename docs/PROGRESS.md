@@ -6,23 +6,28 @@
 
 ---
 
-## Refactor R1: Clinical Operator Usability & Persistent Layout
-- [x] **R1.1 — Persistent Layout (Anti-Refresh Sidebar):** Moved `<AuthenticatedLayout>` resolution to `resources/js/app.tsx` via `module.default.layout`. Sidebar never re-mounts or refreshes during SPA route transitions, scroll position stays intact, and active parent dropdown accordions remain open automatically.
-- [x] **R1.2 — Strict Clinical Sidebar Hierarchy:** Restructured sidebar into 8 clinical groups:
+## Refactor R1: Clinical Operator Usability, Fluid 2K Multi-Screen & Persistent Layout
+- [x] **R1.1 — Persistent Layout (Anti-Refresh Sidebar):** Moved `<AuthenticatedLayout>` resolution to a stable global reference function in `resources/js/app.tsx`. Sidebar never re-mounts or refreshes during SPA route transitions, scroll position stays intact, and active parent dropdown accordions remain open automatically.
+- [x] **R1.2 — Full-Width Fluid Canvas & Multi-Resolution Responsive (2K 2560x1440, FHD, Mobile):**
+  - Removed `max-w-7xl` constraint; updated `<main>` wrapper to `w-full max-w-none` with responsive padding `p-4 md:p-6 2xl:p-8`.
+  - Desktop sidebar width set to `w-[264px] 2xl:w-[272px]` (fixed/sticky full-height with its own internal scroll), collapsible to `w-16`, and mobile slide-over drawer `w-72` on `< lg`.
+  - Modal and narrow form surfaces protected with `max-w-md` to `max-w-3xl` so inputs do not overstretch on ultra-wide 2K screens.
+  - Table scroll isolation: `<DataTable />` horizontal scroll `overflow-x-auto min-w-0` strictly isolated inside the table container; filter bars use `flex flex-wrap items-end gap-3`.
+- [x] **R1.3 — Strict Clinical Sidebar Hierarchy:** Restructured sidebar into 8 clinical groups:
   - HALAMAN UTAMA: `Dashboard`
-  - DATA MASTER: `Master Pemeriksaan` (Sampel, Laboratorium, Radiologi, Elektromedis, Pemeriksaan Fisik, Tarif Paket), `Master Pendaftaran` (Master Perujuk, Perujuk, Bank), `Master Umum` (Unit, Perusahaan, Pegawai, Pengguna, Vendor)
+  - DATA MASTER: `Master Pemeriksaan` (accordion: Sampel, Laboratorium, Radiologi, Elektromedis, Pemeriksaan Fisik, Tarif Paket), `Master Pendaftaran` (accordion: Master Perujuk, Perujuk, Bank), `Master Umum` (accordion: Unit, Perusahaan, Pegawai, Pengguna, Vendor)
   - ADMIN: `Pendaftaran` (manajemen/void/edit admin)
   - PENDAFTARAN: `Pasien`, `Pendaftaran`, `Ambil Hasil`
   - DATA MCU: `MCU`, `Hasil MCU`, `Input Hasil MCU`, `Review Manajer MCU`, `Review Dokter MCU`, `Ambil Sampel`
   - DATA HASIL PENUNJANG: `Laboratorium`, `Radiologi`, `Elektromedis`, `Fisik`
-  - LAPORAN: `Pendapatan` (`Pendapatan Harian`, `Rekap Pendapatan`), `Pemeriksaan` (`Pemeriksaan`, `Rekap Pemeriksaan`)
-  - LAINNYA: `Kartu Kontrol`, `Pengaturan` (`Pengaturan Klinik`, `Audit Trail`)
-- [x] **R1.3 — Scaled UI (Readable & Anti-Salah Klik):**
+  - LAPORAN: `Pendapatan` (accordion: `Pendapatan Harian`, `Rekap Pendapatan`), `Pemeriksaan` (accordion: `Pemeriksaan`, `Rekap Pemeriksaan`)
+  - LAINNYA: `Kartu Kontrol`, `Pengaturan` (accordion: `Pengaturan Klinik`, `Audit Trail`)
+- [x] **R1.4 — Scaled UI (Readable & Anti-Salah Klik):**
   - Sidebar: `text-[15px]`, padding `py-2.5 px-3.5`, icon `w-5 h-5`.
   - DataTable: header `text-xs font-semibold uppercase tracking-wider py-3.5 px-4`, rows `text-sm py-3.5 px-4` with subtle zebra striping (`even:bg-zinc-50/70`) and clear hover.
   - Controls & Buttons: `h-10` (`40px`), `text-sm font-medium`, primary button `h-10 px-4 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-sm`.
   - Action dropdown items: `px-3.5 py-2.5 text-sm` with `w-4 h-4` icons.
-- [x] **R1.4 — Zero AI-Slop Cleanup:** Removed all descriptive subtitle paragraphs under headers across all 28 pages; eliminated confusing buzzwords; standardized concise 1–3 word Indonesian terms (`Master Sampel`, `Tambah Data`, `Cari`, `Terapkan`, `Reset`, `Simpan`, `Batal`, `Aksi`); updated `.agents/rules/antigravity_project_rules.md`.
+- [x] **R1.5 — Zero AI-Slop Cleanup:** Removed all descriptive subtitle paragraphs under headers across all 28 pages; eliminated confusing buzzwords (`advice`, `workflow`, `snapshot`, `atau`, `untuk`, excessive `/` and `\`); standardized concise 1–3 word Indonesian terms (`Master Sampel`, `Tambah Data`, `Cari`, `Terapkan`, `Reset`, `Simpan`, `Batal`, `Aksi`); updated `.agents/rules/antigravity_project_rules.md`.
 
 ---
 
@@ -285,3 +290,45 @@
   - `tests/Feature/EndToEndWorkflowTest.php` (1/1 passed, 73 assertions)
   - `tests/Feature/ExampleTest.php` (1/1 passed)
   - Total: **145/145 tests passing (977 assertions)**
+
+---
+
+## 5. Refinement Milestones (Tahap R)
+
+### Tahap R1: Layout, Persistent Sidebar, Skala UI & Anti AI-Slop (Completed)
+- **Fluid Layout 2K/FHD/Mobile:** Menghapus seluruh batasan `max-w-7xl` / `container mx-auto` pada wrapper utama, dashboard, dan tabel. Diganti dengan canvas fluid `w-full max-w-none` dan responsive padding `p-4 md:p-6 2xl:p-8`.
+- **Inertia Persistent Layout:** Layout `<AuthenticatedLayout>` dibungkus via stable reference di `resources/js/app.tsx`. Navigasi antar halaman tidak lagi me-remount sidebar, scrollbar sidebar stabil, dan parent accordion aktif tetap terbuka.
+- **Sidebar & Responsivitas:** Lebar sidebar desktop `w-[264px] 2xl:w-[272px]`, collapsible ke icon-only `w-16`, dan drawer `w-72` pada layar `< lg`.
+- **Struktur Menu Klinik:** Menata 8 kelompok menu operasional klinik dengan 3 accordion parent di DATA MASTER (`Master Pemeriksaan`, `Master Pendaftaran`, `Master Umum`), accordion di LAPORAN (`Pendapatan`, `Pemeriksaan`), dan LAINNYA.
+- **Skala UI Operator:** Font sidebar `text-[15px]`, padding `py-2.5 px-3.5`, ikon `w-5 h-5`. Input, select & button minimal `h-10` (`40px`), tabel dengan zebra stripe halus, dan `tabular-nums` pada seluruh kolom numerik.
+- **Anti AI-Slop:** Audit dan pembersihan seluruh subtitle panjang di bawah header halaman dan modal. Istilah direct Bahasa Indonesia 1–3 kata (`Tambah Data`, `Ubah`, `Hapus`, `Aktifkan`, `Nonaktifkan`, `Simpan`, `Batal`).
+
+### Tahap R2: Alur Master Pemeriksaan & Integrasi Event Paket MCU (Completed)
+- **Pemisahan Kategori Master Pemeriksaan:**
+  - Halaman `Sampel`: 4 kolom bersih (`No`, `Nama Sampel`, `Status`, `Aksi`) dengan tombol aksi langsung `Ubah` dan `Nonaktifkan / Aktifkan`.
+  - 4 Kategori Layanan (`Laboratorium`, `Radiologi`, `Elektromedis`, `Pemeriksaan Fisik`): 7 kolom baku (`Nama Layanan`, `Sampel`, `Tarif`, `Status`, `User Update`, `Waktu Update`, `Aksi`).
+  - Kolom `Aksi` menyediakan 3 akses langsung: **Parameter** (membuka manajemen parameter, nilai rujukan, dan aturan kesimpulan), **Ubah** (modal edit layanan), dan **Nonaktifkan / Aktifkan** (toggle status).
+  - Controller `ServiceController`: eager loading `with(['sample', 'updater'])` mencegah N+1 queries, dan redirect mempertahankan query param `category`.
+- **Integrasi Event Master Tarif Paket -> Data MCU:**
+  - Tabel `Master Tarif Paket`: 9 kolom operasional (`Nama Perujuk`, `Tahun`, `Event`, `Nama Paket`, `Tarif Total`, `Diskon`, `Tarif Akhir`, `Status`, `Aksi`).
+  - Modal Form Tambah/Ubah Tarif Paket: urutan field terstruktur (`Perujuk`, `Tahun`, `Nama Event` dengan datalist pilihan event yang sudah ada, `Nama Paket`, pemilih layanan dengan auto-sum tarif total, dan `Diskon (Rp)` dengan auto-hitung tarif akhir).
+  - Hubungan Form Tambah MCU (`Events/Index.tsx`): `McuEventController` menyediakan daftar event dari paket pemeriksaan (`packageEvents`). Saat Admin memilih `Tahun` dan `Perujuk`, input `Nama Event MCU` otomatis menyarankan daftar event yang cocok via `<datalist>` dan tombol pilih cepat, dengan tetap mendukung input manual bebas.
+- **Verifikasi Build:** `npm run build` sukses 100% dengan 0 error TypeScript / Vite bundling.
+
+### Tahap R3: Pendaftaran Peserta MCU, Webcam Check-In & Cetak Stiker/Kartu (Completed)
+- **Database & Model:**
+  - Migrasi `2026_11_25_160000_update_registrations_allow_pending_and_nullable_reg_no`: kolom `reg_no` dan `registered_at` nullable, menambahkan status enum `'pending'` (Belum Daftar) pada `workflow_status`.
+  - Model `Registration`: hook `creating` tidak meng-generate `reg_no` saat status masih `pending`.
+- **Aksi Import Pasien di Data MCU -> MCU:**
+  - Menambahkan menu `Import Pasien` di dropdown aksi per baris Event MCU ([Events/Index.tsx](file:///d:/laragon/www/mastersummit/resources/js/Pages/Events/Index.tsx)).
+- **Halaman Data Pasien MCU ([Events/Participants/Index.tsx](file:///d:/laragon/www/mastersummit/resources/js/Pages/Events/Participants/Index.tsx)):**
+  - Tabel 9 kolom: `No`, `Aksi`, `No. Registrasi`, `Nama`, `Tgl Lahir`, `JK`, `Bagian`, `Paket`, `Status` (`Belum Daftar` / `Terdaftar`).
+  - Dropdown 7 Aksi per Baris: `Daftar`, `Label Lab`, `Label Non Lab`, `Cetak Kartu`, `Cetak Kartu Kontrol`, `Ubah`, `Hapus`.
+  - Validasi cetak: jika peserta belum klik `Daftar`, sistem memunculkan pemberitahuan untuk mendaftar terlebih dahulu.
+- **Modal Form Daftar (Webcam + Opsi Ganti Paket):**
+  - 4 field ringkas: `Event MCU` (readonly), `Tanggal` (date picker), `Foto` (live webcam capture `getUserMedia` + retake + fallback upload file), dan `Paket` (dropdown paket yang bisa diubah di lokasi).
+  - Backend `checkIn` (dalam `DB::transaction()`): simpan foto ke storage, update paket, generate `reg_no` resmi, ubah status ke `registered`, dan otomatis membongkar seluruh layanan paket ke `registration_items`.
+- **Ekspor/Impor Template & Cetak Stiker/Kartu:**
+  - `McuParticipantImportService` & `McuParticipantsTemplateExport`: download template & import massal Excel/CSV peserta MCU dengan pencatatan log.
+  - `PrintLabelController` & Blade views (`label_lab.blade.php`, `label_non_lab.blade.php`, `participant_card.blade.php`): cetak stiker thermal barcode 50x30mm dan kartu tanda peserta MCU 85x54mm.
+- **Verifikasi:** 5/5 unit & feature tests di `McuParticipantTest` lulus 100%, `npm run build` sukses tanpa error.

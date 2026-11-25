@@ -20,27 +20,27 @@ interface BadgeProps {
 
 const variantStyles: Record<BadgeVariant, { container: string; icon: LucideIcon; iconColor: string }> = {
     success: {
-        container: 'bg-emerald-50/90 text-emerald-700',
+        container: 'bg-emerald-50/90 text-emerald-800 border border-emerald-200/60',
         icon: CheckCircle2,
         iconColor: 'text-emerald-600',
     },
     warning: {
-        container: 'bg-amber-50/90 text-amber-700',
+        container: 'bg-amber-50/90 text-amber-800 border border-amber-200/60',
         icon: Clock,
         iconColor: 'text-amber-600',
     },
     danger: {
-        container: 'bg-rose-50/90 text-rose-700',
+        container: 'bg-rose-50/90 text-rose-800 border border-rose-200/60',
         icon: AlertTriangle,
         iconColor: 'text-rose-600',
     },
     info: {
-        container: 'bg-sky-50/90 text-sky-700',
+        container: 'bg-sky-50/90 text-sky-800 border border-sky-200/60',
         icon: Info,
         iconColor: 'text-sky-600',
     },
     neutral: {
-        container: 'bg-zinc-100 text-zinc-600',
+        container: 'bg-zinc-100 text-zinc-700 border border-zinc-200/60',
         icon: Minus,
         iconColor: 'text-zinc-400',
     },
@@ -58,9 +58,9 @@ export default function Badge({
 
     return (
         <span
-            className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-sm text-[11px] font-medium tracking-tight whitespace-nowrap ${config.container} ${className}`}
+            className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-sm text-[12px] font-semibold tracking-tight whitespace-nowrap ${config.container} ${className}`}
         >
-            {IconComponent && <IconComponent className={`w-3 h-3 shrink-0 ${config.iconColor}`} />}
+            {IconComponent && <IconComponent className={`w-3.5 h-3.5 shrink-0 ${config.iconColor}`} />}
             <span>{label || children}</span>
         </span>
     );

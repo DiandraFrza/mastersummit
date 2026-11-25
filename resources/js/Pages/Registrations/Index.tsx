@@ -614,7 +614,7 @@ export default function RegistrationsIndex({
                                         type="text"
                                         value={patientSearch}
                                         onChange={(e) => setPatientSearch(e.target.value)}
-                                        placeholder="Ketik NRM, NIK, atau Nama Pasien untuk mencari..."
+                                        placeholder="Cari NRM, NIK, nama pasien..."
                                         className="w-full pl-8 pr-3 py-1.5 text-xs rounded-md border border-zinc-300 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-900"
                                     />
                                     <Search className="w-4 h-4 text-zinc-400 absolute left-2.5 top-2" />

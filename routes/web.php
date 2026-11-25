@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Events\BulkMcuPrintController;
 use App\Http\Controllers\Events\McuEventController;
+use App\Http\Controllers\Events\McuParticipantController;
 use App\Http\Controllers\Examinations\BulkExcelController;
 use App\Http\Controllers\Examinations\ExaminationResultController;
 use App\Http\Controllers\Examinations\McuReviewController;
@@ -21,6 +22,7 @@ use App\Http\Controllers\Master\UserController;
 use App\Http\Controllers\Master\VendorController;
 use App\Http\Controllers\Patients\PatientController;
 use App\Http\Controllers\Portal\OnlineResultPortalController;
+use App\Http\Controllers\Prints\PrintLabelController;
 use App\Http\Controllers\Prints\PrintTemplateController;
 use App\Http\Controllers\Registrations\ControlCardController;
 use App\Http\Controllers\Registrations\RegistrationController;
@@ -143,6 +145,20 @@ Route::middleware('auth')->group(function () {
     Route::get('/mcu-events/{mcuEvent}/bulk-results', [BulkExcelController::class, 'index'])->name('events.bulk-results.index');
     Route::get('/mcu-events/{mcuEvent}/bulk-results/template', [BulkExcelController::class, 'template'])->name('events.bulk-results.template');
     Route::post('/mcu-events/{mcuEvent}/bulk-results/import', [BulkExcelController::class, 'import'])->name('events.bulk-results.import');
+
+    // Peserta Event MCU & Check-In (Tahap R3)
+    Route::get('/mcu-events/{mcuEvent}/participants', [McuParticipantController::class, 'index'])->name('events.participants.index');
+    Route::post('/mcu-events/{mcuEvent}/participants', [McuParticipantController::class, 'store'])->name('events.participants.store');
+    Route::put('/mcu-events/{mcuEvent}/participants/{registration}', [McuParticipantController::class, 'update'])->name('events.participants.update');
+    Route::delete('/mcu-events/{mcuEvent}/participants/{registration}', [McuParticipantController::class, 'destroy'])->name('events.participants.destroy');
+    Route::get('/mcu-events/{mcuEvent}/participants/template', [McuParticipantController::class, 'template'])->name('events.participants.template');
+    Route::post('/mcu-events/{mcuEvent}/participants/import', [McuParticipantController::class, 'importExcel'])->name('events.participants.import');
+    Route::post('/mcu-events/{mcuEvent}/participants/{registration}/check-in', [McuParticipantController::class, 'checkIn'])->name('events.participants.check-in');
+
+    // Cetak Stiker Label & Kartu Peserta (Tahap R3)
+    Route::get('/registrations/{registration}/label-lab', [PrintLabelController::class, 'labelLab'])->name('registrations.label-lab');
+    Route::get('/registrations/{registration}/label-non-lab', [PrintLabelController::class, 'labelNonLab'])->name('registrations.label-non-lab');
+    Route::get('/registrations/{registration}/participant-card', [PrintLabelController::class, 'participantCard'])->name('registrations.participant-card');
 
     // Pendaftaran 1 Pintu & Split Billing (Domain E - Tables 21 & 22)
     Route::get('/registrations', [RegistrationController::class, 'index'])->name('registrations.index');

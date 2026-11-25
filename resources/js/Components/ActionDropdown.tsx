@@ -45,7 +45,7 @@ export default function ActionDropdown({
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className="inline-flex items-center gap-2 h-9 px-3 text-sm font-medium text-zinc-700 bg-white border border-zinc-200 rounded-md hover:bg-zinc-50 hover:text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-400 transition-colors shadow-2xs"
+                className="inline-flex items-center gap-2 h-10 px-3.5 text-sm font-medium text-zinc-700 bg-white border border-zinc-200 rounded-md hover:bg-zinc-50 hover:text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-400 transition-colors shadow-2xs"
             >
                 <span>{label}</span>
                 <ChevronDown className={`w-4 h-4 text-zinc-400 transition-transform duration-150 ${isOpen ? 'rotate-180' : ''}`} />

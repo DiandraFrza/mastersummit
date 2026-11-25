@@ -395,7 +395,7 @@ export default function CompaniesIndex({ companies, filters }: CompaniesIndexPro
                                 type="text"
                                 value={data.director_name}
                                 onChange={(e) => setData('director_name', e.target.value)}
-                                placeholder="Nama pimpinan atau PIC utama"
+                                placeholder="Nama pimpinan"
                                 className="w-full text-xs px-3 py-2 bg-white border border-zinc-300 rounded-md focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500"
                             />
                         </div>

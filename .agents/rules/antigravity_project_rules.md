@@ -68,8 +68,12 @@ Before creating any migration, model, controller, service, or UI component, you 
 Target visual benchmark: **Linear / Stripe / Vercel** — crisp, fast, high-clarity medical workspace.
 
 - **Persistent Layout & Navigation Architecture:**
-  - Sidebar and top bar live in a persistent layout (`resources/js/app.tsx`). Page navigation MUST NEVER remount or refresh the sidebar or reset scroll position.
+  - Sidebar and top bar live in a persistent layout (`resources/js/app.tsx` via stable reference). Page navigation MUST NEVER remount or refresh the sidebar or reset scroll position.
   - Active parent dropdowns in the sidebar auto-expand based on the current URL.
+  - **Full-Width Fluid Canvas (2K & FHD Multi-Resolution):** App main wrapper MUST use fluid `w-full max-w-none` with consistent responsive padding `p-4 md:p-6 2xl:p-8`. **FORBIDDEN:** Do NOT wrap main pages, dashboards, or data tables inside `max-w-7xl` or `container mx-auto`.
+  - **Sidebar Width & Responsiveness:** Desktop sidebar width is `w-[264px] 2xl:w-[272px]` (fixed/sticky full-height with its own internal scroll), collapsible to icon-only `w-16`, and transforms into slide-over drawer `w-72` on `< lg` screens.
+  - **Input & Modal Width Protection:** Modals and narrow forms MUST keep appropriate `max-w` constraints (`max-w-md` to `max-w-3xl`) to prevent inputs from over-stretching on 2K (2560x1440) displays.
+  - **Table Scroll Isolation:** Horizontal table scrolling `overflow-x-auto min-w-0` MUST be strictly confined within the table container so the whole page never scrolls horizontally. Filter bars above tables use `flex flex-wrap items-end gap-3`.
   - Strict sidebar hierarchy matching clinical workflow:
     - HALAMAN UTAMA: `Dashboard`
     - DATA MASTER: `Master Pemeriksaan` (accordion), `Master Pendaftaran` (accordion), `Master Umum` (accordion)

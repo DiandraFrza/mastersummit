@@ -372,8 +372,7 @@ export default function UsersIndex({
             <Modal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
-                title={editingUser ? `Ubah Pengguna — ${editingUser.name}` : 'Tambah Pengguna Baru'}
-                subtitle="Atur kredensial akun, kombinasi multi-role, dan checklist izin granular"
+                title={editingUser ? `Ubah Pengguna — ${editingUser.name}` : 'Tambah Pengguna'}
                 maxWidth="2xl"
                 footer={
                     <>

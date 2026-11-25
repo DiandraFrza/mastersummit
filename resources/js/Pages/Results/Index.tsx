@@ -332,7 +332,7 @@ export default function ResultsIndex({
                         <div className="text-xl font-bold font-mono text-zinc-900 mt-1 tabular-nums">
                             {kpi.total_completed.toLocaleString('id-ID')}
                         </div>
-                        <div className="text-[10px] text-zinc-400 mt-0.5">Workflow status: completed</div>
+                        <div className="text-[10px] text-zinc-400 mt-0.5">Status selesai</div>
                     </div>
 
                     <div className="bg-white p-3.5 rounded-lg border border-zinc-200/80 shadow-xs">

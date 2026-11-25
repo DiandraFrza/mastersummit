@@ -361,6 +361,7 @@ export type ServiceType = 'regular' | 'mcu';
 export type PayerType = 'aps' | 'corporate' | 'referrer';
 export type PaymentStatus = 'unpaid' | 'partial' | 'paid' | 'corporate_billed';
 export type WorkflowStatus =
+    | 'pending'
     | 'registered'
     | 'in_progress'
     | 'result_entered'
@@ -483,8 +484,8 @@ export interface Payment {
 
 export interface Registration {
     id: number;
-    reg_no: string;
-    registered_at: string;
+    reg_no: string | null;
+    registered_at: string | null;
     patient_id: number;
     service_type: ServiceType;
     payer_type: PayerType;

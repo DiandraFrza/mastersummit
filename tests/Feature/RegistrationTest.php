@@ -60,11 +60,11 @@ class RegistrationTest extends TestCase
         $this->bank = Bank::first() ?? Bank::create([
             'name' => 'BCA',
             'account_number' => '1234567890',
-            'account_name' => 'Klinik Summit',
+            'account_holder' => 'Klinik Summit',
             'is_active' => true,
         ]);
 
-        $this->package = Package::with('packageItems.service')->first();
+        $this->package = Package::has('packageItems')->with('packageItems.service')->first() ?? Package::first();
     }
 
     protected function tearDown(): void

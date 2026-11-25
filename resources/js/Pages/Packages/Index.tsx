@@ -21,6 +21,7 @@ interface PackagesIndexProps extends PageProps {
     packages: Pagination<Package>;
     services: Service[];
     referrers: Referrer[];
+    existingEvents?: string[];
     filters: Record<string, any>;
 }
 
@@ -33,6 +34,7 @@ export default function PackagesIndex({
     packages,
     services,
     referrers,
+    existingEvents = [],
     filters,
 }: PackagesIndexProps) {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -201,67 +203,63 @@ export default function PackagesIndex({
 
     const columns: ColumnDef<Package>[] = [
         {
+            header: 'Nama Perujuk',
+            id: 'referrer',
+            width: '160px',
+            cell: ({ row }) => (
+                <span className="text-xs font-medium text-zinc-900 truncate">
+                    {row.referrer?.name || <span className="text-zinc-400">Umum / Reguler</span>}
+                </span>
+            ),
+        },
+        {
             header: 'Tahun',
             accessorKey: 'year',
             isNumeric: true,
             sortable: true,
-            width: '90px',
+            width: '85px',
             align: 'center',
             cell: ({ value }) => (
-                <span className="font-mono text-xs font-semibold text-zinc-700 bg-zinc-100 px-2 py-0.5 rounded tabular-nums">
+                <span className="font-mono text-xs font-semibold text-zinc-700 bg-zinc-100 px-2 py-0.5 rounded-sm tabular-nums">
                     {value}
                 </span>
             ),
         },
         {
-            header: 'Nama Paket MCU',
-            accessorKey: 'name',
+            header: 'Event',
+            accessorKey: 'event_label',
             sortable: true,
-            cell: ({ row }) => (
-                <div className="flex flex-col">
-                    <span className="font-medium text-zinc-900">{row.name}</span>
-                    <div className="flex items-center gap-1.5 text-[11px] text-zinc-500 mt-0.5">
-                        {row.event_label && (
-                            <span className="text-teal-700 font-medium">
-                                • {row.event_label}
-                            </span>
-                        )}
-                        {row.referrer && (
-                            <span className="text-zinc-400 truncate max-w-[150px]">
-                                • Perujuk: {row.referrer.name}
-                            </span>
-                        )}
-                    </div>
-                </div>
+            width: '180px',
+            cell: ({ value }) => (
+                <span className="text-xs font-medium text-zinc-800 truncate" title={value || '—'}>
+                    {value || <span className="text-zinc-400">—</span>}
+                </span>
             ),
         },
         {
-            header: 'Item Pemeriksaan',
-            id: 'items_count',
-            width: '180px',
+            header: 'Nama Paket',
+            accessorKey: 'name',
+            sortable: true,
             cell: ({ row }) => {
                 const count = row.package_items?.length || 0;
                 return (
-                    <div className="flex flex-col text-[11px]">
-                        <span className="font-semibold text-zinc-800 tabular-nums">
-                            {count} Pemeriksaan
-                        </span>
-                        <span className="text-zinc-400 truncate max-w-[170px]" title={row.package_items?.map(p => p.service?.name).join(', ')}>
-                            {row.package_items?.slice(0, 2).map(p => p.service?.name).join(', ')}
-                            {count > 2 ? ` +${count - 2} lainnya` : ''}
+                    <div className="flex flex-col">
+                        <span className="font-semibold text-zinc-900">{row.name}</span>
+                        <span className="text-[11px] text-zinc-400">
+                            {count} Layanan ({row.package_items?.slice(0, 2).map((p: any) => p.service?.name).join(', ')}{count > 2 ? ` +${count - 2}` : ''})
                         </span>
                     </div>
                 );
             },
         },
         {
-            header: 'Total Dasar',
+            header: 'Tarif Total',
             accessorKey: 'total_price',
             sortable: true,
             align: 'right',
-            width: '120px',
+            width: '130px',
             cell: ({ value }) => (
-                <span className="font-mono text-xs text-zinc-500 tabular-nums">
+                <span className="font-mono text-xs text-zinc-700 tabular-nums">
                     {formatCurrency(value)}
                 </span>
             ),
@@ -270,21 +268,21 @@ export default function PackagesIndex({
             header: 'Diskon',
             accessorKey: 'discount_amount',
             align: 'right',
-            width: '110px',
+            width: '120px',
             cell: ({ value }) => (
                 <span className="font-mono text-xs text-rose-600 tabular-nums">
-                    {Number(value) > 0 ? `-${formatCurrency(value)}` : '—'}
+                    {Number(value) > 0 ? `-${formatCurrency(value)}` : '0'}
                 </span>
             ),
         },
         {
-            header: 'Tarif Akhir (Final)',
+            header: 'Tarif Akhir',
             accessorKey: 'final_price',
             sortable: true,
             align: 'right',
-            width: '130px',
+            width: '140px',
             cell: ({ value }) => (
-                <span className="font-mono text-xs font-bold text-teal-700 tabular-nums">
+                <span className="font-mono text-xs font-bold text-emerald-700 tabular-nums">
                     {formatCurrency(value)}
                 </span>
             ),
@@ -308,37 +306,46 @@ export default function PackagesIndex({
             header: 'Aksi',
             id: 'actions',
             align: 'right',
-            width: '80px',
-            cell: ({ row }) => {
-                const items: ActionDropdownItem[] = [
-                    {
-                        label: 'Edit Paket',
-                        icon: Pencil,
-                        onClick: () => openEditModal(row),
-                    },
-                    {
-                        label: row.is_active ? 'Nonaktifkan' : 'Aktifkan',
-                        icon: Power,
-                        variant: row.is_active ? 'danger' : 'default',
-                        onClick: () => handleToggleStatus(row),
-                    },
-                ];
-
-                return <ActionDropdown items={items} align="right" />;
-            },
+            width: '170px',
+            cell: ({ row }) => (
+                <div className="flex items-center justify-end gap-1.5">
+                    <button
+                        type="button"
+                        onClick={() => openEditModal(row)}
+                        className="inline-flex items-center gap-1 h-8 px-2.5 text-xs font-semibold text-zinc-700 bg-white hover:bg-zinc-100 border border-zinc-200 rounded-sm transition-colors cursor-pointer"
+                        title="Ubah tarif paket"
+                    >
+                        <Pencil className="w-3.5 h-3.5 text-zinc-500" />
+                        <span>Ubah</span>
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => handleToggleStatus(row)}
+                        className={`inline-flex items-center gap-1 h-8 px-2.5 text-xs font-semibold rounded-sm transition-colors cursor-pointer ${
+                            row.is_active
+                                ? 'text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200/80'
+                                : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80'
+                        }`}
+                        title={row.is_active ? 'Nonaktifkan paket' : 'Aktifkan paket'}
+                    >
+                        <Power className="w-3.5 h-3.5" />
+                        <span>{row.is_active ? 'Nonaktif' : 'Aktifkan'}</span>
+                    </button>
+                </div>
+            ),
         },
     ];
 
     return (
         <>
-            <Head title="Tabel Master Tarif Paket" />
+            <Head title="Tarif Paket" />
 
             <div className="space-y-4">
                 {/* Header Action Bar */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white p-4 rounded-md border border-zinc-200">
                     <div>
                         <h1 className="text-xl font-bold text-zinc-900 tracking-tight">
-                            Tabel Master Tarif Paket
+                            Tarif Paket
                         </h1>
                     </div>
 
@@ -422,31 +429,35 @@ export default function PackagesIndex({
             <Modal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
-                title={editingPackage ? 'Edit Paket Pemeriksaan' : 'Tambah Paket MCU Baru'}
-                description="Komposisi layanan pemeriksaan, diskon paket, dan tarif penagihan."
-                maxWidth="xl"
+                title={editingPackage ? 'Ubah Tarif Paket' : 'Tambah Tarif Paket'}
+                maxWidth="3xl"
             >
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <div className="md:col-span-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
                             <label className="block text-xs font-medium text-zinc-700 mb-1">
-                                Nama Paket Pemeriksaan <span className="text-red-500">*</span>
+                                Perujuk
                             </label>
-                            <input
-                                type="text"
-                                value={data.name}
-                                onChange={(e) => setData('name', e.target.value)}
-                                placeholder="Contoh: Paket MCU Eksekutif Platinum 2026"
-                                className="w-full text-xs px-3 py-2 bg-white border border-zinc-300 rounded-md focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500"
-                            />
-                            {errors.name && (
-                                <p className="mt-1 text-[11px] text-red-600">{errors.name}</p>
+                            <select
+                                value={data.referrer_id || ''}
+                                onChange={(e) => setData('referrer_id', e.target.value)}
+                                className="w-full h-10 text-sm px-3 bg-white border border-zinc-300 rounded-md focus:outline-none focus:ring-1 focus:ring-zinc-900"
+                            >
+                                <option value="">Umum</option>
+                                {referrers.map((r) => (
+                                    <option key={r.id} value={r.id}>
+                                        {r.name}
+                                    </option>
+                                ))}
+                            </select>
+                            {errors.referrer_id && (
+                                <p className="mt-1 text-[11px] text-red-600">{errors.referrer_id}</p>
                             )}
                         </div>
 
                         <div>
                             <label className="block text-xs font-medium text-zinc-700 mb-1">
-                                Tahun Berlaku <span className="text-red-500">*</span>
+                                Tahun <span className="text-red-500">*</span>
                             </label>
                             <input
                                 type="number"
@@ -454,39 +465,49 @@ export default function PackagesIndex({
                                 max="2099"
                                 value={data.year}
                                 onChange={(e) => setData('year', parseInt(e.target.value, 10) || new Date().getFullYear())}
-                                className="w-full text-xs font-mono px-3 py-2 bg-white border border-zinc-300 rounded-md focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 tabular-nums"
+                                className="w-full h-10 text-sm font-mono px-3 bg-white border border-zinc-300 rounded-md focus:outline-none focus:ring-1 focus:ring-zinc-900 tabular-nums"
                             />
-                        </div>
-
-                        <div className="md:col-span-2">
-                            <label className="block text-xs font-medium text-zinc-700 mb-1">
-                                Label Event / Perjanjian Kontrak (Opsional)
-                            </label>
-                            <input
-                                type="text"
-                                value={data.event_label}
-                                onChange={(e) => setData('event_label', e.target.value)}
-                                placeholder="Contoh: MCU Karyawan PT Pertamina Batch 1"
-                                className="w-full text-xs px-3 py-2 bg-white border border-zinc-300 rounded-md focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500"
-                            />
+                            {errors.year && (
+                                <p className="mt-1 text-[11px] text-red-600">{errors.year}</p>
+                            )}
                         </div>
 
                         <div>
                             <label className="block text-xs font-medium text-zinc-700 mb-1">
-                                Perujuk Khusus (Opsional)
+                                Nama Event
                             </label>
-                            <select
-                                value={data.referrer_id || ''}
-                                onChange={(e) => setData('referrer_id', e.target.value)}
-                                className="w-full text-xs px-3 py-2 bg-white border border-zinc-300 rounded-md focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500"
-                            >
-                                <option value="">— Umum (Bukan Perujuk Khusus) —</option>
-                                {referrers.map((r) => (
-                                    <option key={r.id} value={r.id}>
-                                        {r.name}
-                                    </option>
+                            <input
+                                type="text"
+                                list="existing-events-datalist"
+                                value={data.event_label}
+                                onChange={(e) => setData('event_label', e.target.value)}
+                                placeholder="Pilih atau ketik event..."
+                                className="w-full h-10 text-sm px-3 bg-white border border-zinc-300 rounded-md focus:outline-none focus:ring-1 focus:ring-zinc-900"
+                            />
+                            <datalist id="existing-events-datalist">
+                                {existingEvents.map((evt) => (
+                                    <option key={evt} value={evt} />
                                 ))}
-                            </select>
+                            </datalist>
+                            {errors.event_label && (
+                                <p className="mt-1 text-[11px] text-red-600">{errors.event_label}</p>
+                            )}
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-medium text-zinc-700 mb-1">
+                                Nama Paket <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                value={data.name}
+                                onChange={(e) => setData('name', e.target.value)}
+                                placeholder="Nama paket pemeriksaan"
+                                className="w-full h-10 text-sm px-3 bg-white border border-zinc-300 rounded-md focus:outline-none focus:ring-1 focus:ring-zinc-900"
+                            />
+                            {errors.name && (
+                                <p className="mt-1 text-[11px] text-red-600">{errors.name}</p>
+                            )}
                         </div>
                     </div>
 
@@ -494,19 +515,19 @@ export default function PackagesIndex({
                     <div className="pt-2 border-t border-zinc-200">
                         <div className="flex items-center justify-between mb-2">
                             <label className="text-xs font-semibold text-zinc-800 flex items-center gap-1.5">
-                                <Tag className="w-3.5 h-3.5 text-teal-600" />
-                                <span>Pilihan Pemeriksaan dalam Paket ({data.items.length} item)</span>
+                                <Tag className="w-3.5 h-3.5 text-zinc-600" />
+                                <span>Pilihan Pemeriksaan ({data.items.length} item)</span>
                             </label>
                         </div>
 
                         {/* Quick Add Bar */}
-                        <div className="flex items-center gap-2 mb-3 bg-zinc-50 p-2 rounded-md border border-zinc-200/80">
+                        <div className="flex items-center gap-2 mb-3 bg-zinc-50 p-2.5 rounded-md border border-zinc-200">
                             <select
                                 value={selectedServiceIdToAdd}
                                 onChange={(e) => setSelectedServiceIdToAdd(e.target.value)}
-                                className="flex-1 text-xs px-3 py-1.5 bg-white border border-zinc-300 rounded-md focus:outline-none focus:ring-1 focus:ring-teal-500"
+                                className="flex-1 h-10 text-sm px-3 bg-white border border-zinc-300 rounded-md focus:outline-none focus:ring-1 focus:ring-zinc-900"
                             >
-                                <option value="">— Pilih Layanan untuk Ditambahkan —</option>
+                                <option value="">Pilih Layanan</option>
                                 {services.map((svc) => (
                                     <option key={svc.id} value={svc.id}>
                                         [{svc.code}] {svc.name} ({svc.category}) — {formatCurrency(svc.base_price)}
@@ -516,10 +537,10 @@ export default function PackagesIndex({
                             <button
                                 type="button"
                                 onClick={handleAddItem}
-                                className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-teal-600 hover:bg-teal-700 rounded-md transition-colors"
+                                className="inline-flex items-center gap-1.5 h-10 px-4 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-md transition-colors"
                             >
-                                <Plus className="w-3.5 h-3.5" />
-                                <span>Tambah ke Paket</span>
+                                <Plus className="w-4 h-4" />
+                                <span>Tambah</span>
                             </button>
                         </div>
 
@@ -565,7 +586,7 @@ export default function PackagesIndex({
                                                             value={item.item_price_override ?? ''}
                                                             onChange={(e) => handlePriceOverrideChange(idx, e.target.value)}
                                                             placeholder="Ikuti dasar"
-                                                            className="w-full text-right text-xs font-mono px-2 py-1 bg-white border border-zinc-200 rounded focus:outline-none focus:ring-1 focus:ring-teal-500 tabular-nums placeholder:text-zinc-300"
+                                                            className="w-full text-right text-xs font-mono px-2 py-1 bg-white border border-zinc-200 rounded focus:outline-none focus:ring-1 focus:ring-zinc-900 tabular-nums placeholder:text-zinc-300"
                                                         />
                                                     </td>
                                                     <td className="py-2 px-2 text-center">
@@ -573,7 +594,7 @@ export default function PackagesIndex({
                                                             type="button"
                                                             onClick={() => handleRemoveItem(idx)}
                                                             className="text-zinc-400 hover:text-red-600 p-1 transition-colors"
-                                                            title="Hapus dari paket"
+                                                            title="Hapus"
                                                         >
                                                             <Trash2 className="w-3.5 h-3.5" />
                                                         </button>
@@ -588,20 +609,20 @@ export default function PackagesIndex({
                     </div>
 
                     {/* Calculation Summary Card */}
-                    <div className="bg-zinc-50 p-3 rounded-md border border-zinc-200/80 space-y-2">
-                        <div className="flex items-center justify-between text-xs text-zinc-600">
-                            <span>Subtotal Item Pemeriksaan:</span>
-                            <span className="font-mono font-semibold tabular-nums text-zinc-800">
+                    <div className="bg-zinc-50 p-3.5 rounded-md border border-zinc-200 space-y-2.5">
+                        <div className="flex items-center justify-between text-sm text-zinc-700">
+                            <span className="font-medium">Tarif Total:</span>
+                            <span className="font-mono font-semibold tabular-nums text-zinc-900 text-base">
                                 {formatCurrency(calculatedTotal)}
                             </span>
                         </div>
 
-                        <div className="flex items-center justify-between text-xs text-zinc-600">
-                            <span className="flex items-center gap-1">
-                                <Calculator className="w-3.5 h-3.5 text-teal-600" />
-                                <span>Potongan Diskon Paket (Rp):</span>
+                        <div className="flex items-center justify-between text-sm text-zinc-700">
+                            <span className="font-medium flex items-center gap-1.5">
+                                <Calculator className="w-4 h-4 text-zinc-600" />
+                                <span>Diskon (Rp):</span>
                             </span>
-                            <div className="w-36">
+                            <div className="w-48">
                                 <input
                                     type="number"
                                     min="0"
@@ -609,14 +630,14 @@ export default function PackagesIndex({
                                     value={data.discount_amount}
                                     onChange={(e) => setData('discount_amount', parseFloat(e.target.value) || 0)}
                                     placeholder="0"
-                                    className="w-full text-right text-xs font-mono px-2.5 py-1 bg-white border border-zinc-300 rounded focus:outline-none focus:ring-1 focus:ring-teal-500 tabular-nums text-rose-600 font-semibold"
+                                    className="w-full h-10 text-right text-sm font-mono px-3 bg-white border border-zinc-300 rounded-md focus:outline-none focus:ring-1 focus:ring-zinc-900 tabular-nums text-rose-600 font-semibold"
                                 />
                             </div>
                         </div>
 
-                        <div className="flex items-center justify-between text-xs font-bold text-teal-800 pt-2 border-t border-zinc-200">
-                            <span>Tarif Akhir Paket MCU (Final):</span>
-                            <span className="font-mono text-sm tabular-nums text-teal-700">
+                        <div className="flex items-center justify-between text-sm font-bold text-zinc-900 pt-2.5 border-t border-zinc-200">
+                            <span>Tarif Akhir:</span>
+                            <span className="font-mono text-base tabular-nums text-emerald-700">
                                 {formatCurrency(calculatedFinal)}
                             </span>
                         </div>
@@ -628,10 +649,10 @@ export default function PackagesIndex({
                             id="pkg_is_active"
                             checked={data.is_active}
                             onChange={(e) => setData('is_active', e.target.checked)}
-                            className="h-4 w-4 rounded border-zinc-300 text-teal-600 focus:ring-teal-500"
+                            className="h-4 w-4 rounded border-zinc-300 text-emerald-600 focus:ring-emerald-500"
                         />
                         <label htmlFor="pkg_is_active" className="text-xs text-zinc-700 cursor-pointer select-none">
-                            Paket Aktif & Tampil pada Pendaftaran 1 Pintu
+                            Aktif
                         </label>
                     </div>
 
@@ -639,14 +660,14 @@ export default function PackagesIndex({
                         <button
                             type="button"
                             onClick={() => setIsModalOpen(false)}
-                            className="px-3 py-1.5 text-xs font-medium text-zinc-700 bg-white border border-zinc-300 hover:bg-zinc-50 rounded-md transition-colors"
+                            className="h-10 px-4 text-sm font-medium text-zinc-700 bg-white border border-zinc-300 hover:bg-zinc-50 rounded-md transition-colors"
                         >
                             Batal
                         </button>
                         <button
                             type="submit"
                             disabled={processing}
-                            className="h-10 px-4 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 rounded-md transition-colors shadow-xs"
+                            className="h-10 px-5 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 rounded-md transition-colors shadow-xs"
                         >
                             {processing ? 'Menyimpan...' : 'Simpan'}
                         </button>

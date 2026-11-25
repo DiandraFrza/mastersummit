@@ -455,7 +455,7 @@ export default function ReferrersIndex({
                                 rows={2}
                                 value={data.address}
                                 onChange={(e) => setData('address', e.target.value)}
-                                placeholder="Alamat lengkap klinik atau tempat praktik..."
+                                placeholder="Alamat lengkap klinik / instansi..."
                                 className="w-full text-xs px-3 py-2 bg-white border border-zinc-300 rounded-md focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500"
                             />
                         </div>

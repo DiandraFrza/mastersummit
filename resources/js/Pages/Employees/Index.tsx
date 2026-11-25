@@ -306,7 +306,6 @@ export default function EmployeesIndex({ employees, filters }: EmployeesIndexPro
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 title={editingEmployee ? 'Ubah Data Pegawai' : 'Tambah Pegawai Baru'}
-                subtitle="Isi data kepegawaian dan unggah berkas PNG tanda tangan / stempel digital"
                 maxWidth="xl"
                 footer={
                     <>

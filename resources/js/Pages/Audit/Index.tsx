@@ -352,7 +352,7 @@ export default function Index({
                         columns={columns}
                         data={activities}
                         filters={filters}
-                        searchPlaceholder="Cari ID, subjek, deskripsi, atau nama operator..."
+                        searchPlaceholder="Cari aktivitas..."
                         routeName="audit-logs.index"
                         emptyMessage="Belum ada riwayat aktivitas yang sesuai dengan filter ini."
                     />

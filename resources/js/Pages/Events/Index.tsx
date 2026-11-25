@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Head, router, useForm } from '@inertiajs/react';
 import DataTable, { ColumnDef } from '@/Components/DataTable';
 import Badge from '@/Components/Badge';
@@ -40,6 +40,7 @@ interface EventsIndexProps extends PageProps {
     companies: Company[];
     referrers: Referrer[];
     employees: Employee[];
+    packageEvents?: Array<{ id: number; referrer_id: number | null; year: number; event_label: string }>;
     filters: Record<string, any>;
     nextEventCode: string;
 }
@@ -60,6 +61,7 @@ export default function EventsIndex({
     companies,
     referrers,
     employees,
+    packageEvents = [],
     filters,
     nextEventCode,
 }: EventsIndexProps) {
@@ -138,6 +140,18 @@ export default function EventsIndex({
         notes: '',
         _method: 'POST',
     });
+
+    const suggestedEvents = React.useMemo(() => {
+        if (!packageEvents || packageEvents.length === 0) return [];
+        return packageEvents
+            .filter((pe) => {
+                const matchesYear = !data.year || pe.year === Number(data.year);
+                const matchesReferrer = !data.referrer_id || !pe.referrer_id || pe.referrer_id === Number(data.referrer_id);
+                return matchesYear && matchesReferrer;
+            })
+            .map((pe) => pe.event_label)
+            .filter((val, idx, arr) => arr.indexOf(val) === idx && val && val.trim() !== '');
+    }, [packageEvents, data.year, data.referrer_id]);
 
     const openCreateModal = () => {
         setEditingEvent(null);
@@ -336,6 +350,11 @@ export default function EventsIndex({
             cell: ({ row }) => {
                 const items: ActionDropdownItem[] = [
                     {
+                        label: 'Import Pasien',
+                        icon: Users,
+                        onClick: () => router.get(route('events.participants.index', row.id)),
+                    },
+                    {
                         label: 'Import/Export Excel Hasil',
                         icon: FileSpreadsheet,
                         onClick: () => router.get(route('events.bulk-results.index', row.id)),
@@ -464,8 +483,7 @@ export default function EventsIndex({
             <Modal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
-                title={editingEvent ? 'Edit Event MCU' : 'Buat Event MCU Baru'}
-                subtitle="Konfigurasi pelaksanaan MCU korporat dan delegasi dokter"
+                title={editingEvent ? 'Ubah Event MCU' : 'Tambah Event MCU'}
                 maxWidth="3xl"
                 footer={
                     <div className="flex items-center justify-end gap-2">
@@ -499,25 +517,33 @@ export default function EventsIndex({
                                 max={2100}
                                 value={data.year}
                                 onChange={(e) => setData('year', Number(e.target.value))}
-                                className="w-full px-3 py-1.5 text-xs font-mono rounded-md border border-zinc-300 focus:outline-none focus:ring-1 focus:ring-zinc-900 tabular-nums"
+                                className="w-full h-10 px-3 text-sm font-mono rounded-md border border-zinc-300 focus:outline-none focus:ring-1 focus:ring-zinc-900 tabular-nums"
                                 required
                             />
+                            {errors.year && (
+                                <p className="mt-1 text-[11px] text-rose-500">{errors.year}</p>
+                            )}
                         </div>
 
                         <div>
                             <label className="block text-xs font-medium text-zinc-700 mb-1">
-                                Kode Event MCU <span className="text-rose-500">*</span>
+                                Perujuk / Partner Marketing <span className="text-rose-500">*</span>
                             </label>
-                            <input
-                                type="text"
-                                value={data.event_code}
-                                onChange={(e) => setData('event_code', e.target.value)}
-                                placeholder="misal: MCU-2026-001"
-                                className="w-full px-3 py-1.5 text-xs font-mono rounded-md border border-zinc-300 focus:outline-none focus:ring-1 focus:ring-zinc-900"
+                            <select
+                                value={data.referrer_id}
+                                onChange={(e) => setData('referrer_id', e.target.value)}
+                                className="w-full h-10 px-3 text-sm rounded-md border border-zinc-300 focus:outline-none focus:ring-1 focus:ring-zinc-900"
                                 required
-                            />
-                            {errors.event_code && (
-                                <p className="mt-1 text-[11px] text-rose-500">{errors.event_code}</p>
+                            >
+                                <option value="">Pilih Perujuk</option>
+                                {referrers.map((r) => (
+                                    <option key={r.id} value={r.id}>
+                                        {r.name}
+                                    </option>
+                                ))}
+                            </select>
+                            {errors.referrer_id && (
+                                <p className="mt-1 text-[11px] text-rose-500">{errors.referrer_id}</p>
                             )}
                         </div>
 
@@ -528,7 +554,7 @@ export default function EventsIndex({
                             <select
                                 value={data.status}
                                 onChange={(e) => setData('status', e.target.value as McuEventStatus)}
-                                className="w-full px-3 py-1.5 text-xs rounded-md border border-zinc-300 focus:outline-none focus:ring-1 focus:ring-zinc-900"
+                                className="w-full h-10 px-3 text-sm rounded-md border border-zinc-300 focus:outline-none focus:ring-1 focus:ring-zinc-900"
                             >
                                 <option value="draft">Draft</option>
                                 <option value="ongoing">Sedang Berjalan</option>
@@ -536,21 +562,52 @@ export default function EventsIndex({
                                 <option value="completed">Selesai</option>
                                 <option value="closed">Ditutup</option>
                             </select>
+                            {errors.status && (
+                                <p className="mt-1 text-[11px] text-rose-500">{errors.status}</p>
+                            )}
                         </div>
                     </div>
 
                     <div>
-                        <label className="block text-xs font-medium text-zinc-700 mb-1">
-                            Nama Event MCU <span className="text-rose-500">*</span>
-                        </label>
+                        <div className="flex items-center justify-between mb-1">
+                            <label className="block text-xs font-medium text-zinc-700">
+                                Nama Event MCU <span className="text-rose-500">*</span>
+                            </label>
+                            {suggestedEvents.length > 0 && (
+                                <span className="text-[11px] text-emerald-600 font-medium">
+                                    {suggestedEvents.length} event tersedia dari Master Tarif Paket
+                                </span>
+                            )}
+                        </div>
                         <input
                             type="text"
+                            list="mcu-package-events-datalist"
                             value={data.event_name}
                             onChange={(e) => setData('event_name', e.target.value)}
-                            placeholder="misal: MCU Tahunan Karyawan PT Telkom Indonesia 2026"
-                            className="w-full px-3 py-1.5 text-xs rounded-md border border-zinc-300 focus:outline-none focus:ring-1 focus:ring-zinc-900"
+                            placeholder="Ketik atau pilih event dari Master Tarif Paket..."
+                            className="w-full h-10 px-3 text-sm rounded-md border border-zinc-300 focus:outline-none focus:ring-1 focus:ring-zinc-900"
                             required
                         />
+                        <datalist id="mcu-package-events-datalist">
+                            {suggestedEvents.map((evt) => (
+                                <option key={evt} value={evt} />
+                            ))}
+                        </datalist>
+                        {suggestedEvents.length > 0 && !data.event_name && (
+                            <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                                <span className="text-[11px] text-zinc-500">Pilih cepat:</span>
+                                {suggestedEvents.slice(0, 4).map((evt) => (
+                                    <button
+                                        key={evt}
+                                        type="button"
+                                        onClick={() => setData('event_name', evt)}
+                                        className="text-[11px] px-2 py-0.5 bg-zinc-100 hover:bg-emerald-50 hover:text-emerald-700 text-zinc-700 rounded border border-zinc-200 transition-colors"
+                                    >
+                                        {evt}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                         {errors.event_name && (
                             <p className="mt-1 text-[11px] text-rose-500">{errors.event_name}</p>
                         )}
@@ -559,12 +616,29 @@ export default function EventsIndex({
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label className="block text-xs font-medium text-zinc-700 mb-1">
+                                Kode Event MCU <span className="text-rose-500">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                value={data.event_code}
+                                onChange={(e) => setData('event_code', e.target.value)}
+                                placeholder="misal: MCU-2026-001"
+                                className="w-full h-10 px-3 text-sm font-mono rounded-md border border-zinc-300 focus:outline-none focus:ring-1 focus:ring-zinc-900"
+                                required
+                            />
+                            {errors.event_code && (
+                                <p className="mt-1 text-[11px] text-rose-500">{errors.event_code}</p>
+                            )}
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-medium text-zinc-700 mb-1">
                                 Perusahaan / Klien Korporat
                             </label>
                             <select
                                 value={data.company_id}
                                 onChange={(e) => setData('company_id', e.target.value)}
-                                className="w-full px-3 py-1.5 text-xs rounded-md border border-zinc-300 focus:outline-none focus:ring-1 focus:ring-zinc-900"
+                                className="w-full h-10 px-3 text-sm rounded-md border border-zinc-300 focus:outline-none focus:ring-1 focus:ring-zinc-900"
                             >
                                 <option value="">— Non Perusahaan / Mandiri —</option>
                                 {companies.map((c) => (
@@ -573,24 +647,9 @@ export default function EventsIndex({
                                     </option>
                                 ))}
                             </select>
-                        </div>
-
-                        <div>
-                            <label className="block text-xs font-medium text-zinc-700 mb-1">
-                                Perujuk / Partner Marketing <span className="text-rose-500">*</span>
-                            </label>
-                            <select
-                                value={data.referrer_id}
-                                onChange={(e) => setData('referrer_id', e.target.value)}
-                                className="w-full px-3 py-1.5 text-xs rounded-md border border-zinc-300 focus:outline-none focus:ring-1 focus:ring-zinc-900"
-                                required
-                            >
-                                {referrers.map((r) => (
-                                    <option key={r.id} value={r.id}>
-                                        {r.name}
-                                    </option>
-                                ))}
-                            </select>
+                            {errors.company_id && (
+                                <p className="mt-1 text-[11px] text-rose-500">{errors.company_id}</p>
+                            )}
                         </div>
 
                         <div>
@@ -602,8 +661,11 @@ export default function EventsIndex({
                                 min={0}
                                 value={data.target_participants}
                                 onChange={(e) => setData('target_participants', Number(e.target.value))}
-                                className="w-full px-3 py-1.5 text-xs font-mono rounded-md border border-zinc-300 focus:outline-none focus:ring-1 focus:ring-zinc-900 tabular-nums"
+                                className="w-full h-10 px-3 text-sm font-mono rounded-md border border-zinc-300 focus:outline-none focus:ring-1 focus:ring-zinc-900 tabular-nums"
                             />
+                            {errors.target_participants && (
+                                <p className="mt-1 text-[11px] text-rose-500">{errors.target_participants}</p>
+                            )}
                         </div>
                     </div>
 

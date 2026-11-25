@@ -37,7 +37,7 @@ class ServiceController extends Controller
         $statusFilter = $request->input('status', 'all');
         $categoryFilter = $request->input('category', 'all');
 
-        $query = Service::query()->with('sample');
+        $query = Service::query()->with(['sample', 'updater']);
 
         if ($search !== '') {
             $query->where(function ($q) use ($search) {
@@ -82,13 +82,13 @@ class ServiceController extends Controller
      */
     public function store(StoreServiceRequest $request): RedirectResponse
     {
-        DB::transaction(function () use ($request) {
+        $service = DB::transaction(function () use ($request) {
             $validated = $request->validated();
             $validated['is_active'] = $request->boolean('is_active', true);
-            Service::create($validated);
+            return Service::create($validated);
         });
 
-        return redirect()->route('services.index')->with('success', 'Layanan pemeriksaan baru berhasil ditambahkan.');
+        return redirect()->route('services.index', ['category' => $service->category])->with('success', 'Layanan berhasil ditambahkan.');
     }
 
     /**
@@ -102,7 +102,7 @@ class ServiceController extends Controller
             $service->update($validated);
         });
 
-        return redirect()->route('services.index')->with('success', 'Data pemeriksaan berhasil diperbarui.');
+        return redirect()->route('services.index', ['category' => $service->category])->with('success', 'Layanan berhasil diubah.');
     }
 
     /**

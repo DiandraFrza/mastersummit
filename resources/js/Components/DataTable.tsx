@@ -200,7 +200,7 @@ export default function DataTable<T extends Record<string, any>>({
     return (
         <div className="bg-white border border-zinc-200/90 rounded-md overflow-hidden flex flex-col shadow-xs">
             {/* Table Control Bar */}
-            <div className="p-4 border-b border-zinc-200/80 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3.5 bg-white">
+            <div className="p-4 border-b border-zinc-200/80 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3.5 bg-white">
                 {/* Search & Reset */}
                 <div className="flex items-center gap-2 flex-1 max-w-md">
                     {searchable && (
@@ -233,7 +233,7 @@ export default function DataTable<T extends Record<string, any>>({
                 </div>
 
                 {/* Slot Filters, Actions & Entries */}
-                <div className="flex items-center flex-wrap gap-2.5 justify-end">
+                <div className="flex flex-wrap items-end gap-3 justify-start sm:justify-end">
                     {filterSlot}
 
                     {actionsSlot}
@@ -262,7 +262,7 @@ export default function DataTable<T extends Record<string, any>>({
             {/* Table Container (Engages Virtualization Scroll Container when per_page >= 100) */}
             <div
                 ref={parentRef}
-                className={`w-full overflow-x-auto ${isVirtual ? 'max-h-[650px] overflow-y-auto' : ''}`}
+                className={`w-full min-w-0 overflow-x-auto ${isVirtual ? 'max-h-[650px] overflow-y-auto' : ''}`}
             >
                 <table className="w-full border-collapse text-left text-sm">
                     <thead className="sticky top-0 z-10 bg-zinc-50/95 backdrop-blur-xs border-b border-zinc-200">
@@ -404,7 +404,7 @@ export default function DataTable<T extends Record<string, any>>({
                             type="button"
                             disabled={!paginationData.prev_page_url}
                             onClick={() => paginationData.prev_page_url && updateQuery({ page: paginationData.current_page - 1 })}
-                            className="inline-flex items-center justify-center h-9 px-3 text-sm font-medium text-zinc-700 bg-white border border-zinc-200 rounded-md hover:bg-zinc-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                            className="inline-flex items-center justify-center h-10 px-3.5 text-sm font-medium text-zinc-700 bg-white border border-zinc-200 rounded-md hover:bg-zinc-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                             title="Halaman Sebelumnya"
                         >
                             <ChevronLeft className="w-4 h-4" />
@@ -422,13 +422,13 @@ export default function DataTable<T extends Record<string, any>>({
                                         type="button"
                                         disabled={isCurrent || !link.url}
                                         onClick={() => {
-                                            if (link.url) {
+                                             if (link.url) {
                                                 const url = new URL(link.url, window.location.origin);
                                                 const targetPage = url.searchParams.get('page');
                                                 if (targetPage) updateQuery({ page: Number(targetPage) });
                                             }
                                         }}
-                                        className={`inline-flex items-center justify-center h-9 min-w-9 px-2.5 text-sm tabular-nums rounded-md font-medium transition-colors ${
+                                        className={`inline-flex items-center justify-center h-10 min-w-10 px-3 text-sm tabular-nums rounded-md font-medium transition-colors ${
                                             isCurrent
                                                 ? 'bg-zinc-900 text-white font-semibold'
                                                 : 'text-zinc-700 bg-white border border-zinc-200 hover:bg-zinc-50'
@@ -443,7 +443,7 @@ export default function DataTable<T extends Record<string, any>>({
                             type="button"
                             disabled={!paginationData.next_page_url}
                             onClick={() => paginationData.next_page_url && updateQuery({ page: paginationData.current_page + 1 })}
-                            className="inline-flex items-center justify-center h-9 px-3 text-sm font-medium text-zinc-700 bg-white border border-zinc-200 rounded-md hover:bg-zinc-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                            className="inline-flex items-center justify-center h-10 px-3.5 text-sm font-medium text-zinc-700 bg-white border border-zinc-200 rounded-md hover:bg-zinc-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                             title="Halaman Berikutnya"
                         >
                             <ChevronRight className="w-4 h-4" />

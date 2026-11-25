@@ -67,10 +67,13 @@ class PackageController extends Controller
             'id', 'code', 'name', 'category', 'sub_group', 'base_price', 'sample_id',
         ]);
 
+        $existingEvents = Package::whereNotNull('event_label')->where('event_label', '!=', '')->distinct()->pluck('event_label')->values();
+
         return Inertia::render('Packages/Index', [
             'packages' => $packages,
             'referrers' => $referrers,
             'services' => $services,
+            'existingEvents' => $existingEvents,
             'filters' => [
                 'search' => $search,
                 'status' => $statusFilter,

@@ -101,20 +101,22 @@ export default function SamplesIndex({ samples, filters }: SamplesIndexProps) {
 
     const columns: ColumnDef<Sample>[] = [
         {
-            header: 'Urutan',
-            accessorKey: 'sort_order',
+            header: 'No',
+            accessorKey: 'id',
             isNumeric: true,
-            sortable: true,
-            width: '80px',
+            width: '70px',
             align: 'center',
-            cell: ({ value }) => (
-                <span className="font-mono text-zinc-600 font-semibold tabular-nums text-xs">
-                    #{value}
-                </span>
-            ),
+            cell: ({ index }) => {
+                const currentNumber = ((samples.current_page - 1) * samples.per_page) + index + 1;
+                return (
+                    <span className="font-mono text-zinc-500 font-semibold tabular-nums text-xs">
+                        {currentNumber}
+                    </span>
+                );
+            },
         },
         {
-            header: 'Stasiun / Spesimen',
+            header: 'Nama Sampel',
             accessorKey: 'name',
             sortable: true,
             cell: ({ row }) => (
@@ -125,20 +127,6 @@ export default function SamplesIndex({ samples, filters }: SamplesIndexProps) {
                     </span>
                 </div>
             ),
-        },
-        {
-            header: 'Kategori Modul',
-            accessorKey: 'category',
-            sortable: true,
-            width: '180px',
-            cell: ({ value }) => {
-                const conf = categoryBadges[value] || { label: value, icon: TestTubes, variant: 'neutral' };
-                return (
-                    <Badge variant={conf.variant} icon={conf.icon}>
-                        {conf.label}
-                    </Badge>
-                );
-            },
         },
         {
             header: 'Status',
@@ -159,37 +147,46 @@ export default function SamplesIndex({ samples, filters }: SamplesIndexProps) {
             header: 'Aksi',
             id: 'actions',
             align: 'right',
-            width: '80px',
-            cell: ({ row }) => {
-                const items: ActionDropdownItem[] = [
-                    {
-                        label: 'Edit Stasiun',
-                        icon: Pencil,
-                        onClick: () => openEditModal(row),
-                    },
-                    {
-                        label: row.is_active ? 'Nonaktifkan' : 'Aktifkan',
-                        icon: Power,
-                        variant: row.is_active ? 'danger' : 'default',
-                        onClick: () => handleToggleStatus(row),
-                    },
-                ];
-
-                return <ActionDropdown items={items} align="right" />;
-            },
+            width: '180px',
+            cell: ({ row }) => (
+                <div className="flex items-center justify-end gap-1.5">
+                    <button
+                        type="button"
+                        onClick={() => openEditModal(row)}
+                        className="inline-flex items-center gap-1 h-8 px-2.5 text-xs font-semibold text-zinc-700 bg-white border border-zinc-200 hover:bg-zinc-100 rounded-sm transition-colors cursor-pointer"
+                        title="Ubah data sampel"
+                    >
+                        <Pencil className="w-3.5 h-3.5 text-zinc-500" />
+                        <span>Ubah</span>
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => handleToggleStatus(row)}
+                        className={`inline-flex items-center gap-1 h-8 px-2.5 text-xs font-semibold rounded-sm transition-colors cursor-pointer ${
+                            row.is_active
+                                ? 'text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200/80'
+                                : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80'
+                        }`}
+                        title={row.is_active ? 'Nonaktifkan sampel' : 'Aktifkan sampel'}
+                    >
+                        <Power className="w-3.5 h-3.5" />
+                        <span>{row.is_active ? 'Nonaktif' : 'Aktifkan'}</span>
+                    </button>
+                </div>
+            ),
         },
     ];
 
     return (
         <>
-            <Head title="Master Sampel" />
+            <Head title="Sampel" />
 
             <div className="space-y-4">
                 {/* Header Action Bar */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white p-4 rounded-md border border-zinc-200">
                     <div>
                         <h1 className="text-xl font-bold text-zinc-900 tracking-tight">
-                            Master Sampel
+                            Sampel
                         </h1>
                     </div>
 
@@ -260,7 +257,7 @@ export default function SamplesIndex({ samples, filters }: SamplesIndexProps) {
                     data={samples.data}
                     columns={columns}
                     pagination={samples}
-                    searchPlaceholder="Cari kode, nama spesimen atau stasiun..."
+                    searchPlaceholder="Cari spesimen atau stasiun..."
                     currentSearch={filters.search}
                     currentSort={filters.sort}
                     currentDirection={filters.direction}

@@ -8,6 +8,7 @@ use App\Http\Requests\Events\UpdateMcuEventRequest;
 use App\Models\Company;
 use App\Models\Employee;
 use App\Models\McuEvent;
+use App\Models\Package;
 use App\Models\Referrer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -79,6 +80,12 @@ class McuEventController extends Controller
         $referrers = Referrer::where('is_active', true)->orderBy('name')->get(['id', 'name']);
         $employees = Employee::where('is_active', true)->orderBy('name')->get(['id', 'name', 'job_title']);
 
+        $packageEvents = Package::whereNotNull('event_label')
+            ->where('event_label', '!=', '')
+            ->select(['id', 'referrer_id', 'year', 'event_label'])
+            ->distinct()
+            ->get();
+
         $currentYear = (int) date('Y');
 
         return Inertia::render('Events/Index', [
@@ -86,6 +93,7 @@ class McuEventController extends Controller
             'companies' => $companies,
             'referrers' => $referrers,
             'employees' => $employees,
+            'packageEvents' => $packageEvents,
             'filters' => [
                 'search' => $search,
                 'status' => $statusFilter,

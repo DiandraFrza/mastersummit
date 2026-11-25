@@ -49,9 +49,19 @@ export default function ServicesIndex({
         setEditingService(null);
         reset();
         clearErrors();
-        if (samples.length > 0) {
-            setData('sample_id', samples[0].id);
-        }
+        const activeCategory = ['lab', 'radiology', 'electromedical', 'physical'].includes(filters.category)
+            ? filters.category
+            : 'lab';
+        setData({
+            code: '',
+            name: '',
+            category: activeCategory as any,
+            sub_group: '',
+            sample_id: samples[0]?.id || '',
+            base_price: 0,
+            print_template: activeCategory === 'lab' ? 'standard_lab' : (activeCategory === 'radiology' ? 'radiology' : (activeCategory === 'electromedical' ? 'electromedical' : 'physical')),
+            is_active: true,
+        });
         setIsModalOpen(true);
     };
 
@@ -135,46 +145,21 @@ export default function ServicesIndex({
 
     const columns: ColumnDef<Service>[] = [
         {
-            header: 'Kode',
-            accessorKey: 'code',
-            isNumeric: true,
-            sortable: true,
-            width: '130px',
-            cell: ({ value }) => (
-                <span className="font-mono text-zinc-900 font-semibold tabular-nums text-xs">
-                    {value}
-                </span>
-            ),
-        },
-        {
-            header: 'Pemeriksaan & Sub-Grup',
+            header: 'Nama Layanan',
             accessorKey: 'name',
             sortable: true,
             cell: ({ row }) => (
                 <div className="flex flex-col">
-                    <span className="font-medium text-zinc-900">{row.name}</span>
-                    <span className="text-[11px] text-zinc-400">
-                        {row.sub_group || 'Pemeriksaan Umum'}
-                    </span>
+                    <span className="font-semibold text-zinc-900">{row.name}</span>
+                    <div className="flex items-center gap-1.5 text-[11px] text-zinc-400 font-mono">
+                        <span>{row.code}</span>
+                        {row.sub_group && <span>• {row.sub_group}</span>}
+                    </div>
                 </div>
             ),
         },
         {
-            header: 'Kategori',
-            accessorKey: 'category',
-            sortable: true,
-            width: '160px',
-            cell: ({ value }) => {
-                const conf = categoryBadges[value] || { label: value, icon: Layers, variant: 'neutral' };
-                return (
-                    <Badge variant={conf.variant} icon={conf.icon}>
-                        {conf.label}
-                    </Badge>
-                );
-            },
-        },
-        {
-            header: 'Stasiun Sampel',
+            header: 'Sampel',
             id: 'sample',
             cell: ({ row }) => (
                 <span className="text-xs text-zinc-700 font-medium">
@@ -183,7 +168,7 @@ export default function ServicesIndex({
             ),
         },
         {
-            header: 'Tarif Dasar',
+            header: 'Tarif',
             accessorKey: 'base_price',
             sortable: true,
             align: 'right',
@@ -192,19 +177,6 @@ export default function ServicesIndex({
                 <span className="font-mono text-xs font-semibold text-zinc-900 tabular-nums">
                     {formatCurrency(value)}
                 </span>
-            ),
-        },
-        {
-            header: 'Format Cetak',
-            accessorKey: 'print_template',
-            width: '160px',
-            cell: ({ value }) => (
-                <div className="flex items-center gap-1 text-[11px] text-zinc-600 font-mono">
-                    <FileText className="w-3 h-3 text-zinc-400 shrink-0" />
-                    <span className="truncate max-w-[140px]" title={printTemplateLabels[value] || value}>
-                        {value}
-                    </span>
-                </div>
             ),
         },
         {
@@ -223,47 +195,99 @@ export default function ServicesIndex({
             ),
         },
         {
+            header: 'User Update',
+            id: 'user_update',
+            width: '140px',
+            cell: ({ row }: { row: any }) => (
+                <span className="text-xs text-zinc-700 font-medium">
+                    {row.updater?.name || '—'}
+                </span>
+            ),
+        },
+        {
+            header: 'Waktu Update',
+            accessorKey: 'updated_at',
+            isNumeric: true,
+            sortable: true,
+            width: '160px',
+            cell: ({ value }) => {
+                if (!value) return <span className="text-zinc-400">—</span>;
+                const date = new Date(value);
+                return (
+                    <span className="text-xs text-zinc-600 tabular-nums">
+                        {date.toLocaleDateString('id-ID', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                        })}{' '}
+                        {date.toLocaleTimeString('id-ID', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                        })}
+                    </span>
+                );
+            },
+        },
+        {
             header: 'Aksi',
             id: 'actions',
             align: 'right',
-            width: '80px',
-            cell: ({ row }) => {
-                const items: ActionDropdownItem[] = [
-                    {
-                        label: 'Kelola Parameter',
-                        icon: SlidersHorizontal,
-                        onClick: () => router.visit(route('services.parameters.index', row.id)),
-                    },
-                    {
-                        label: 'Edit Pemeriksaan',
-                        icon: Pencil,
-                        onClick: () => openEditModal(row),
-                    },
-                    {
-                        label: row.is_active ? 'Nonaktifkan' : 'Aktifkan',
-                        icon: Power,
-                        variant: row.is_active ? 'danger' : 'default',
-                        onClick: () => handleToggleStatus(row),
-                    },
-                ];
+            width: '260px',
+            cell: ({ row }) => (
+                <div className="flex items-center justify-end gap-1.5">
+                    {/* Tombol Parameter */}
+                    <button
+                        type="button"
+                        onClick={() => router.visit(route('services.parameters.index', row.id))}
+                        className="inline-flex items-center gap-1 h-8 px-2.5 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200/80 rounded-sm transition-colors cursor-pointer"
+                        title="Kelola parameter, nilai rujukan, dan aturan kesimpulan"
+                    >
+                        <SlidersHorizontal className="w-3.5 h-3.5" />
+                        <span>Parameter</span>
+                    </button>
 
-                return <ActionDropdown items={items} align="right" />;
-            },
+                    {/* Tombol Ubah */}
+                    <button
+                        type="button"
+                        onClick={() => openEditModal(row)}
+                        className="inline-flex items-center gap-1 h-8 px-2.5 text-xs font-semibold text-zinc-700 bg-white hover:bg-zinc-100 border border-zinc-200 rounded-sm transition-colors cursor-pointer"
+                        title="Ubah nama layanan, sampel, tarif"
+                    >
+                        <Pencil className="w-3.5 h-3.5 text-zinc-500" />
+                        <span>Ubah</span>
+                    </button>
+
+                    {/* Tombol Nonaktifkan / Aktifkan */}
+                    <button
+                        type="button"
+                        onClick={() => handleToggleStatus(row)}
+                        className={`inline-flex items-center gap-1 h-8 px-2.5 text-xs font-semibold rounded-sm transition-colors cursor-pointer ${
+                            row.is_active
+                                ? 'text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200/80'
+                                : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80'
+                        }`}
+                        title={row.is_active ? 'Nonaktifkan layanan' : 'Aktifkan layanan'}
+                    >
+                        <Power className="w-3.5 h-3.5" />
+                        <span>{row.is_active ? 'Nonaktif' : 'Aktifkan'}</span>
+                    </button>
+                </div>
+            ),
         },
     ];
 
     const getPageTitle = () => {
         switch (filters.category) {
             case 'lab':
-                return 'Tabel Master Pemeriksaan Laboratorium';
+                return 'Laboratorium';
             case 'radiology':
-                return 'Tabel Master Pemeriksaan Radiologi';
+                return 'Radiologi';
             case 'electromedical':
-                return 'Tabel Master Pemeriksaan Elektromedis';
+                return 'Elektromedis';
             case 'physical':
-                return 'Tabel Master Pemeriksaan Fisik';
+                return 'Pemeriksaan Fisik';
             default:
-                return 'Master Pemeriksaan';
+                return 'Pemeriksaan';
         }
     };
 
@@ -359,8 +383,7 @@ export default function ServicesIndex({
             <Modal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
-                title={editingService ? 'Edit Layanan Pemeriksaan' : 'Tambah Pemeriksaan Baru'}
-                description="Konfigurasi tarif dasar, stasiun spesimen sampel, dan pemetaan template cetak."
+                title={editingService ? 'Ubah Layanan' : 'Tambah Layanan'}
                 maxWidth="lg"
             >
                 <form onSubmit={handleSubmit} className="space-y-4">

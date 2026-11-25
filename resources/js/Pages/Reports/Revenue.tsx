@@ -489,7 +489,7 @@ export default function Revenue({
                             columns={columns}
                             data={payments}
                             filters={filters}
-                            searchPlaceholder="Cari no. kwitansi, no. reg, nama pasien, atau ref..."
+                            searchPlaceholder="Cari kwitansi, no. reg..."
                             routeName="reports.revenue.index"
                             emptyMessage="Belum ada transaksi pembayaran pada rentang tanggal dan filter ini."
                         />

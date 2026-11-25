@@ -327,8 +327,7 @@ export default function PatientsIndex({
             <Modal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
-                title={editingPatient ? 'Edit Data Pasien' : 'Registrasi Pasien Baru'}
-                subtitle={editingPatient ? `NRM: ${editingPatient.medical_record_no}` : 'Buat master data pasien baru'}
+                title={editingPatient ? 'Ubah Pasien' : 'Tambah Pasien'}
                 maxWidth="2xl"
                 footer={
                     <div className="flex items-center justify-end gap-2">

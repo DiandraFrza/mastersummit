@@ -59,10 +59,10 @@ class Registration extends Model
     protected static function booted(): void
     {
         static::creating(function (Registration $reg) {
-            if (empty($reg->reg_no)) {
+            if (empty($reg->reg_no) && $reg->workflow_status !== 'pending') {
                 $reg->reg_no = static::generateNextRegNo();
             }
-            if (empty($reg->registered_at)) {
+            if (empty($reg->registered_at) && $reg->workflow_status !== 'pending') {
                 $reg->registered_at = now();
             }
         });

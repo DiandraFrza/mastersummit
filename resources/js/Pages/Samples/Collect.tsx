@@ -714,8 +714,7 @@ export default function Collect({
             <Modal
                 isOpen={isCameraModalOpen}
                 onClose={stopCamera}
-                title="Pindai Barcode via Kamera"
-                subtitle="Arahkan kamera perangkat ke barcode kartu kontrol pasien"
+                title="Pindai Barcode"
                 maxWidth="md"
             >
                 <div className="space-y-3">

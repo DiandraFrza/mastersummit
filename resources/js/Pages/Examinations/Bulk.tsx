@@ -217,9 +217,6 @@ export default function Bulk({ auth, mcuEvent, kpi, importLogs }: BulkProps) {
                                     </div>
                                     <h3 className="text-sm font-semibold text-zinc-900">Laboratorium</h3>
                                 </div>
-                                <p className="text-xs text-zinc-500 leading-relaxed">
-                                    Unduh template Excel pre-filled dengan daftar peserta event ini untuk input massal hasil Hematologi, Urin & Kimia Darah.
-                                </p>
                             </div>
 
                             <div className="space-y-2 pt-2 border-t border-zinc-100">
@@ -228,7 +225,7 @@ export default function Bulk({ auth, mcuEvent, kpi, importLogs }: BulkProps) {
                                     className="w-full inline-flex items-center justify-center gap-1.5 rounded-sm border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 hover:bg-zinc-50 hover:border-zinc-300 transition-colors"
                                 >
                                     <Download className="h-3.5 w-3.5 text-zinc-500" />
-                                    <span>Download Template Lab (.xlsx)</span>
+                                    <span>Unduh Template</span>
                                 </a>
 
                                 <button
@@ -237,7 +234,7 @@ export default function Bulk({ auth, mcuEvent, kpi, importLogs }: BulkProps) {
                                     className="w-full inline-flex items-center justify-center gap-1.5 rounded-sm bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 transition-colors shadow-2xs"
                                 >
                                     <Upload className="h-3.5 w-3.5" />
-                                    <span>Upload Hasil Lab</span>
+                                    <span>Unggah Hasil</span>
                                 </button>
                             </div>
                         </div>
@@ -251,9 +248,6 @@ export default function Bulk({ auth, mcuEvent, kpi, importLogs }: BulkProps) {
                                     </div>
                                     <h3 className="text-sm font-semibold text-zinc-900">Audiometri</h3>
                                 </div>
-                                <p className="text-xs text-zinc-500 leading-relaxed">
-                                    Template frekuensi 250 - 8000 Hz (AC & BC). Sistem otomatis menghitung Pure Tone Average (PTA) dan klasifikasi medis.
-                                </p>
                             </div>
 
                             <div className="space-y-2 pt-2 border-t border-zinc-100">
@@ -262,7 +256,7 @@ export default function Bulk({ auth, mcuEvent, kpi, importLogs }: BulkProps) {
                                     className="w-full inline-flex items-center justify-center gap-1.5 rounded-sm border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 hover:bg-zinc-50 hover:border-zinc-300 transition-colors"
                                 >
                                     <Download className="h-3.5 w-3.5 text-zinc-500" />
-                                    <span>Download Template Audiometri</span>
+                                    <span>Unduh Template</span>
                                 </a>
 
                                 <button
@@ -271,7 +265,7 @@ export default function Bulk({ auth, mcuEvent, kpi, importLogs }: BulkProps) {
                                     className="w-full inline-flex items-center justify-center gap-1.5 rounded-sm bg-purple-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-purple-700 transition-colors shadow-2xs"
                                 >
                                     <Upload className="h-3.5 w-3.5" />
-                                    <span>Upload Hasil Audiometri</span>
+                                    <span>Unggah Hasil</span>
                                 </button>
                             </div>
                         </div>
@@ -285,9 +279,6 @@ export default function Bulk({ auth, mcuEvent, kpi, importLogs }: BulkProps) {
                                     </div>
                                     <h3 className="text-sm font-semibold text-zinc-900">Pemeriksaan Fisik</h3>
                                 </div>
-                                <p className="text-xs text-zinc-500 leading-relaxed">
-                                    Template data tanda vital (Tekanan Darah, TB, BB, Nadi, IMT) dan pemeriksaan fisik dokter lapangan.
-                                </p>
                             </div>
 
                             <div className="space-y-2 pt-2 border-t border-zinc-100">
@@ -296,7 +287,7 @@ export default function Bulk({ auth, mcuEvent, kpi, importLogs }: BulkProps) {
                                     className="w-full inline-flex items-center justify-center gap-1.5 rounded-sm border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 hover:bg-zinc-50 hover:border-zinc-300 transition-colors"
                                 >
                                     <Download className="h-3.5 w-3.5 text-zinc-500" />
-                                    <span>Download Template Fisik</span>
+                                    <span>Unduh Template</span>
                                 </a>
 
                                 <button
@@ -305,7 +296,7 @@ export default function Bulk({ auth, mcuEvent, kpi, importLogs }: BulkProps) {
                                     className="w-full inline-flex items-center justify-center gap-1.5 rounded-sm bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700 transition-colors shadow-2xs"
                                 >
                                     <Upload className="h-3.5 w-3.5" />
-                                    <span>Upload Hasil Fisik</span>
+                                    <span>Unggah Hasil</span>
                                 </button>
                             </div>
                         </div>
