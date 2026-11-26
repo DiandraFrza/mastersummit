@@ -47,6 +47,8 @@ export default function ParticipantsIndex({
     // Modals
     const [isCheckInOpen, setIsCheckInOpen] = useState(false);
     const [selectedParticipant, setSelectedParticipant] = useState<Registration | null>(null);
+    const [isQuickPrintOpen, setIsQuickPrintOpen] = useState(false);
+    const [justRegistered, setJustRegistered] = useState<Registration | null>(null);
 
     const [isImportModalOpen, setIsImportModalOpen] = useState(false);
     const [isManualModalOpen, setIsManualModalOpen] = useState(false);
@@ -145,11 +147,14 @@ export default function ParticipantsIndex({
         e.preventDefault();
         if (!selectedParticipant) return;
 
+        const targetParticipant = selectedParticipant;
         checkInForm.post(route('events.participants.check-in', [mcuEvent.id, selectedParticipant.id]), {
             preserveScroll: true,
             onSuccess: () => {
                 setIsCheckInOpen(false);
                 stopCamera();
+                setJustRegistered(targetParticipant);
+                setIsQuickPrintOpen(true);
             },
         });
     };
@@ -339,13 +344,24 @@ export default function ParticipantsIndex({
             ),
         },
         {
+            header: 'NIK',
+            accessorKey: 'patient.nik',
+            width: '140px',
+            sortable: true,
+            cell: ({ row }) => (
+                <span className="font-mono text-xs tabular-nums text-zinc-700">
+                    {row.patient?.nik || <span className="text-zinc-400">-</span>}
+                </span>
+            ),
+        },
+        {
             header: 'Nama',
             accessorKey: 'patient.name',
             cell: ({ row }) => (
                 <div>
                     <div className="font-semibold text-zinc-900">{row.patient?.name || '-'}</div>
                     <div className="text-[11px] text-zinc-500 font-mono">
-                        {row.patient?.nik ? `NIK: ${row.patient.nik}` : (row.patient?.medical_record_no || '')}
+                        {row.patient?.medical_record_no || ''}
                     </div>
                 </div>
             ),
@@ -477,7 +493,7 @@ export default function ParticipantsIndex({
                             className="inline-flex items-center gap-1.5 h-10 px-4 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-md transition-colors shadow-xs"
                         >
                             <Plus className="w-4 h-4" />
-                            <span>Tambah Peserta</span>
+                            <span>Tambah Data</span>
                         </button>
                     </div>
                 </div>
@@ -919,6 +935,76 @@ export default function ParticipantsIndex({
                         </button>
                     </div>
                 </form>
+            </Modal>
+
+            {/* Quick Print Modal Post Check-In */}
+            <Modal
+                show={isQuickPrintOpen}
+                onClose={() => setIsQuickPrintOpen(false)}
+                maxWidth="md"
+            >
+                <div className="p-6">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+                            <CheckCircle2 className="w-6 h-6" />
+                        </div>
+                        <div>
+                            <h2 className="text-lg font-bold text-zinc-900">Check-in Berhasil</h2>
+                            <p className="text-xs text-zinc-500 mt-0.5">
+                                Pasien {justRegistered?.patient?.name} telah terdaftar untuk event ini.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="p-3 bg-zinc-50 rounded-md border border-zinc-200 text-xs mb-5 space-y-1">
+                        <div className="flex justify-between">
+                            <span className="text-zinc-500">Nama Pasien:</span>
+                            <span className="font-semibold text-zinc-900">{justRegistered?.patient?.name}</span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span className="text-zinc-500">Event MCU:</span>
+                            <span className="font-medium text-zinc-800">{mcuEvent.event_name}</span>
+                        </div>
+                    </div>
+
+                    <div className="space-y-2.5">
+                        <button
+                            type="button"
+                            onClick={() => {
+                                if (justRegistered) {
+                                    window.open(route('registrations.control-card', justRegistered.id) + '?print=1', '_blank');
+                                }
+                            }}
+                            className="w-full flex items-center justify-center gap-2 h-11 px-4 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-md transition-colors shadow-xs"
+                        >
+                            <Printer className="w-4 h-4" />
+                            <span>Cetak Kartu Kontrol</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => {
+                                if (justRegistered) {
+                                    window.open(route('registrations.label-non-lab', justRegistered.id), '_blank');
+                                }
+                            }}
+                            className="w-full flex items-center justify-center gap-2 h-11 px-4 text-sm font-medium text-zinc-700 bg-white border border-zinc-300 hover:bg-zinc-50 rounded-md transition-colors"
+                        >
+                            <Tag className="w-4 h-4 text-zinc-500" />
+                            <span>Cetak Label Non Lab</span>
+                        </button>
+                    </div>
+
+                    <div className="mt-4 pt-3 border-t border-zinc-200 text-right">
+                        <button
+                            type="button"
+                            onClick={() => setIsQuickPrintOpen(false)}
+                            className="h-9 px-4 text-xs font-medium text-zinc-600 hover:text-zinc-900 transition-colors"
+                        >
+                            Tutup
+                        </button>
+                    </div>
+                </div>
             </Modal>
         </>
     );

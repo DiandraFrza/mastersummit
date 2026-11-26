@@ -197,5 +197,80 @@ class ServicePackageSeeder extends Seeder
             }
         }
         $execPkg->recalculateTotals();
+
+        // 3. Additional Annual Packages for APS / Walk-in Testing
+        $extraPackages = [
+            // 2024: MCU K3
+            [
+                'name' => 'K3 Standar',
+                'year' => 2024,
+                'event_label' => 'MCU K3',
+                'discount' => 25000.00,
+                'services' => ['LAB-HEMA', 'LAB-URIN', 'FSK-DOKTER-MCU'],
+            ],
+            [
+                'name' => 'K3 Plus',
+                'year' => 2024,
+                'event_label' => 'MCU K3',
+                'discount' => 40000.00,
+                'services' => ['LAB-HEMA', 'LAB-URIN', 'RAD-THORAX-PA', 'FSK-DOKTER-MCU'],
+            ],
+            [
+                'name' => 'K3 Lengkap',
+                'year' => 2024,
+                'event_label' => 'MCU K3',
+                'discount' => 60000.00,
+                'services' => ['LAB-HEMA', 'LAB-URIN', 'RAD-THORAX-PA', 'ELK-EKG-12L', 'ELK-SPIRO-LUNG', 'FSK-DOKTER-MCU'],
+            ],
+            // 2026: Haji, Emerald, Sekolah, Pra Nikah
+            [
+                'name' => 'Paket Haji Mandiri',
+                'year' => 2026,
+                'event_label' => 'Haji',
+                'discount' => 50000.00,
+                'services' => ['LAB-HEMA', 'LAB-GLU-P', 'LAB-URIN', 'RAD-THORAX-PA', 'ELK-EKG-12L', 'FSK-DOKTER-MCU'],
+            ],
+            [
+                'name' => 'Paket Emerald Executive',
+                'year' => 2026,
+                'event_label' => 'Emerald',
+                'discount' => 70000.00,
+                'services' => ['LAB-HEMA', 'LAB-GLU-P', 'LAB-CHOL-TOT', 'LAB-URIN', 'RAD-THORAX-PA', 'ELK-EKG-12L', 'FSK-DOKTER-MCU'],
+            ],
+            [
+                'name' => 'Paket Skrining Sekolah Pelajar',
+                'year' => 2026,
+                'event_label' => 'Sekolah',
+                'discount' => 20000.00,
+                'services' => ['LAB-HEMA', 'LAB-URIN', 'FSK-DOKTER-MCU'],
+            ],
+            [
+                'name' => 'Paket Pra Nikah Sehat',
+                'year' => 2026,
+                'event_label' => 'Pra Nikah',
+                'discount' => 30000.00,
+                'services' => ['LAB-HEMA', 'LAB-URIN', 'LAB-HBSAG', 'FSK-DOKTER-MCU'],
+            ],
+        ];
+
+        foreach ($extraPackages as $pData) {
+            $pkg = Package::firstOrCreate(
+                ['name' => $pData['name'], 'year' => $pData['year'], 'event_label' => $pData['event_label']],
+                [
+                    'discount_amount' => $pData['discount'],
+                    'is_active' => true,
+                ]
+            );
+
+            foreach ($pData['services'] as $code) {
+                if (isset($createdServices[$code])) {
+                    PackageItem::firstOrCreate([
+                        'package_id' => $pkg->id,
+                        'service_id' => $createdServices[$code]->id,
+                    ]);
+                }
+            }
+            $pkg->recalculateTotals();
+        }
     }
 }

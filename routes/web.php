@@ -129,6 +129,8 @@ Route::middleware('auth')->group(function () {
 
     // Master Pasien (Domain E - Table 20)
     Route::get('/patients', [PatientController::class, 'index'])->name('patients.index');
+    Route::get('/patients/search', [PatientController::class, 'search'])->name('patients.search');
+    Route::post('/patients/quick', [PatientController::class, 'quickStore'])->name('patients.quick-store');
     Route::get('/patients/export', [PatientController::class, 'export'])->name('patients.export');
     Route::post('/patients', [PatientController::class, 'store'])->name('patients.store');
     Route::put('/patients/{patient}', [PatientController::class, 'update'])->name('patients.update');
@@ -159,6 +161,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/registrations/{registration}/label-lab', [PrintLabelController::class, 'labelLab'])->name('registrations.label-lab');
     Route::get('/registrations/{registration}/label-non-lab', [PrintLabelController::class, 'labelNonLab'])->name('registrations.label-non-lab');
     Route::get('/registrations/{registration}/participant-card', [PrintLabelController::class, 'participantCard'])->name('registrations.participant-card');
+    Route::get('/registrations/{registration}/receipt', [PrintLabelController::class, 'receipt'])->name('registrations.receipt');
 
     // Pendaftaran 1 Pintu & Split Billing (Domain E - Tables 21 & 22)
     Route::get('/registrations', [RegistrationController::class, 'index'])->name('registrations.index');

@@ -142,4 +142,36 @@ class PrintLabelController extends Controller
 
         return response($html, 200, ['Content-Type' => 'text/html; charset=UTF-8']);
     }
+
+    /**
+     * Printable Official Payment Receipt (Kwitansi Pembayaran).
+     */
+    public function receipt(Registration $registration): Response
+    {
+        $registration->load([
+            'patient',
+            'company',
+            'referrer',
+            'package',
+            'mcuEvent',
+            'items.service',
+            'payments.bank',
+            'payments.receivedBy',
+        ]);
+        $clinic = ClinicSetting::first();
+
+        $patient = $registration->patient;
+        $age = $patient->birth_date ? Carbon::parse($patient->birth_date)->age : $registration->age_years_snapshot;
+        $genderText = $patient->gender === 'L' ? 'Laki-laki' : 'Perempuan';
+
+        $html = view('prints.receipt', [
+            'registration' => $registration,
+            'patient' => $patient,
+            'age' => $age,
+            'genderText' => $genderText,
+            'clinic' => $clinic,
+        ])->render();
+
+        return response($html, 200, ['Content-Type' => 'text/html; charset=UTF-8']);
+    }
 }

@@ -181,4 +181,58 @@ class PatientController extends Controller
             fclose($handle);
         }, $fileName, ['Content-Type' => 'text/csv']);
     }
+
+    /**
+     * Search patients by query for autocomplete.
+     */
+    public function search(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $q = trim((string) $request->input('q', ''));
+        if ($q === '') {
+            return response()->json([]);
+        }
+
+        $patients = Patient::query()
+            ->where('medical_record_no', 'like', "%{$q}%")
+            ->orWhere('nik', 'like', "%{$q}%")
+            ->orWhere('name', 'like', "%{$q}%")
+            ->orWhere('phone', 'like', "%{$q}%")
+            ->limit(10)
+            ->get(['id', 'medical_record_no', 'nik', 'name', 'gender', 'birth_date', 'phone', 'address', 'default_department', 'default_company_id']);
+
+        return response()->json($patients);
+    }
+
+    /**
+     * Quickly create a new patient from registration inline modal.
+     */
+    public function quickStore(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'nik' => ['nullable', 'string', 'max:20'],
+            'gender' => ['required', 'in:L,P'],
+            'birth_date' => ['required', 'date'],
+            'phone' => ['nullable', 'string', 'max:30'],
+            'address' => ['nullable', 'string', 'max:500'],
+            'default_department' => ['nullable', 'string', 'max:100'],
+        ]);
+
+        $patient = Patient::create([
+            'name' => $validated['name'],
+            'nik' => $validated['nik'] ?? null,
+            'gender' => $validated['gender'],
+            'birth_date' => $validated['birth_date'],
+            'phone' => $validated['phone'] ?? null,
+            'address' => $validated['address'] ?? null,
+            'default_department' => $validated['default_department'] ?? null,
+            'created_by' => $request->user()->id,
+            'updated_by' => $request->user()->id,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'patient' => $patient,
+        ]);
+    }
 }

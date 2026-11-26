@@ -26,7 +26,10 @@ import {
     Ban,
     FileText,
     Download,
+    Tag,
 } from 'lucide-react';
+import RegistrationWizardModal from './Components/RegistrationWizardModal';
+import RegistrationSuccessModal from './Components/RegistrationSuccessModal';
 import type {
     PageProps,
     Pagination,
@@ -49,13 +52,19 @@ import type {
 interface RegistrationsIndexProps extends PageProps {
     registrations: Pagination<Registration>;
     companies: Company[];
-    referrers: Referrer[];
+    referrers: (Referrer & { referrer_type_id?: number })[];
+    referrerTypes?: { id: number; name: string; code: string }[];
     packages: Package[];
     services: Service[];
     mcuEvents: McuEvent[];
     banks: Bank[];
     filters: Record<string, any>;
     nextRegNo: string;
+    flash?: {
+        success?: string;
+        error?: string;
+        created_registration?: any;
+    };
 }
 
 const workflowBadges: Record<
@@ -85,175 +94,41 @@ export default function RegistrationsIndex({
     registrations,
     companies,
     referrers,
+    referrerTypes = [],
     packages,
     services,
     mcuEvents,
     banks,
     filters,
     nextRegNo,
+    flash,
 }: RegistrationsIndexProps) {
     // Modal states
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
     const [isVoidModalOpen, setIsVoidModalOpen] = useState(false);
     const [selectedRegistration, setSelectedRegistration] = useState<Registration | null>(null);
+    const [successRegistration, setSuccessRegistration] = useState<{
+        id: number;
+        reg_no: string;
+        patient_name: string;
+        grand_total?: number;
+    } | null>(null);
 
-    // Patient live search for registration modal
-    const [patientSearch, setPatientSearch] = useState('');
-    const [patientResults, setPatientResults] = useState<Patient[]>([]);
-    const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
-    const [isSearchingPatient, setIsSearchingPatient] = useState(false);
-
-    // Form Registration
-    const regForm = useForm({
-        patient_id: '' as string | number,
-        service_type: 'regular' as ServiceType,
-        payer_type: 'aps' as PayerType,
-        referrer_id: '' as string | number,
-        company_id: '' as string | number,
-        mcu_event_id: '' as string | number,
-        package_id: '' as string | number,
-        department_snapshot: '',
-        package_billed_to: 'corporate' as BilledTo,
-        discount_amount: 0,
-        additional_services: [] as {
-            service_id: number;
-            name: string;
-            price: number;
-            discount: number;
-            billed_to: BilledTo;
-        }[],
-        payment: {
-            amount: 0,
-            payment_method: 'cash' as PaymentMethod,
-            bank_id: '' as string | number,
-            reference_no: '',
-            notes: '',
-        },
-    });
+    // Watch for flash message with created_registration
+    useEffect(() => {
+        if (flash?.created_registration) {
+            setSuccessRegistration(flash.created_registration);
+        }
+    }, [flash]);
 
     // Form Void
     const voidForm = useForm({
         void_reason: '',
     });
 
-    // Debounced search for patient
-    useEffect(() => {
-        if (patientSearch.trim().length < 2) {
-            setPatientResults([]);
-            return;
-        }
-
-        const timer = setTimeout(() => {
-            setIsSearchingPatient(true);
-            fetch(`/patients?search=${encodeURIComponent(patientSearch)}`, {
-                headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-            })
-                .then((res) => res.json())
-                .then((res) => {
-                    const data = res?.props?.patients?.data || [];
-                    setPatientResults(data);
-                })
-                .catch(() => setPatientResults([]))
-                .finally(() => setIsSearchingPatient(false));
-        }, 300);
-
-        return () => clearTimeout(timer);
-    }, [patientSearch]);
-
     const openCreateModal = () => {
-        regForm.reset();
-        setSelectedPatient(null);
-        setPatientSearch('');
-        setPatientResults([]);
-        regForm.clearErrors();
         setIsCreateModalOpen(true);
-    };
-
-    const handleSelectPatient = (patient: Patient) => {
-        setSelectedPatient(patient);
-        regForm.setData((prev) => ({
-            ...prev,
-            patient_id: patient.id,
-            company_id: patient.default_company_id || prev.company_id,
-            department_snapshot: patient.default_department || prev.department_snapshot,
-            payer_type: patient.default_company_id ? 'corporate' : 'aps',
-        }));
-        setPatientResults([]);
-    };
-
-    const handlePackageChange = (pkgId: string) => {
-        regForm.setData('package_id', pkgId);
-    };
-
-    const handleAddAddonService = (serviceId: string) => {
-        if (!serviceId) return;
-        const svc = services.find((s) => s.id === Number(serviceId));
-        if (!svc) return;
-
-        // check if already added
-        if (regForm.data.additional_services.some((item) => item.service_id === svc.id)) {
-            return;
-        }
-
-        regForm.setData('additional_services', [
-            ...regForm.data.additional_services,
-            {
-                service_id: svc.id,
-                name: svc.name,
-                price: Number(svc.base_price),
-                discount: 0,
-                billed_to: regForm.data.payer_type === 'corporate' ? 'personal' : 'personal',
-            },
-        ]);
-    };
-
-    const handleRemoveAddon = (index: number) => {
-        const next = [...regForm.data.additional_services];
-        next.splice(index, 1);
-        regForm.setData('additional_services', next);
-    };
-
-    // Calculate totals for preview
-    const selectedPkg = packages.find((p) => p.id === Number(regForm.data.package_id));
-    const packagePrice = selectedPkg ? Number(selectedPkg.final_price) : 0;
-    const addonsTotal = regForm.data.additional_services.reduce(
-        (sum, item) => sum + (item.price - item.discount),
-        0
-    );
-    const subtotal = packagePrice + addonsTotal;
-    const globalDiscount = Number(regForm.data.discount_amount) || 0;
-    const grandTotal = Math.max(0, subtotal - globalDiscount);
-
-    // Split breakdown: Corporate vs Personal
-    let corporateBill = 0;
-    let personalBill = 0;
-
-    if (selectedPkg) {
-        if (regForm.data.package_billed_to === 'corporate') {
-            corporateBill += packagePrice;
-        } else {
-            personalBill += packagePrice;
-        }
-    }
-
-    regForm.data.additional_services.forEach((item) => {
-        const itemFinal = item.price - item.discount;
-        if (item.billed_to === 'corporate') {
-            corporateBill += itemFinal;
-        } else {
-            personalBill += itemFinal;
-        }
-    });
-
-    const handleSubmitRegistration = (e: React.FormEvent) => {
-        e.preventDefault();
-        regForm.post(route('registrations.store'), {
-            onSuccess: () => {
-                setIsCreateModalOpen(false);
-                regForm.reset();
-            },
-        });
     };
 
     const openVoidModal = (registration: Registration) => {
@@ -412,14 +287,24 @@ export default function RegistrationsIndex({
 
                 const items: ActionDropdownItem[] = [
                     {
-                        label: 'Detail Pendaftaran',
+                        label: 'Detail',
                         icon: Eye,
                         onClick: () => openDetailModal(row),
                     },
                     {
+                        label: 'Cetak Kwitansi',
+                        icon: Receipt,
+                        onClick: () => window.open(route('registrations.receipt', row.id) + '?print=1', '_blank'),
+                    },
+                    {
+                        label: 'Cetak Label',
+                        icon: Tag,
+                        onClick: () => window.open(route('registrations.label-lab', row.id), '_blank'),
+                    },
+                    {
                         label: 'Cetak Kartu Kontrol',
                         icon: Printer,
-                        onClick: () => window.open(route('registrations.control-card', { registration: row.id }), '_blank'),
+                        onClick: () => window.open(route('registrations.control-card', { registration: row.id }) + '?print=1', '_blank'),
                     },
                 ];
 
@@ -574,377 +459,27 @@ export default function RegistrationsIndex({
             {/* ========================================================================= */}
             {/* Modal: Pendaftaran Baru (Single-Door Wizard) */}
             {/* ========================================================================= */}
-            <Modal
-                isOpen={isCreateModalOpen}
+            <RegistrationWizardModal
+                show={isCreateModalOpen}
                 onClose={() => setIsCreateModalOpen(false)}
-                title="Pendaftaran Pasien 1 Pintu"
-                subtitle={`No. Registrasi Baru: ${nextRegNo}`}
-                maxWidth="3xl"
-                footer={
-                    <div className="flex items-center justify-end gap-2">
-                        <button
-                            type="button"
-                            onClick={() => setIsCreateModalOpen(false)}
-                            className="px-3 py-1.5 text-xs font-medium text-zinc-600 bg-white border border-zinc-200 rounded-md hover:bg-zinc-50 transition-colors"
-                        >
-                            Batal
-                        </button>
-                        <button
-                            type="submit"
-                            form="reg-form"
-                            disabled={regForm.processing || !selectedPatient}
-                            className="px-4 py-1.5 text-xs font-semibold text-white bg-zinc-900 rounded-md hover:bg-zinc-800 transition-colors shadow-xs disabled:opacity-50"
-                        >
-                            {regForm.processing ? 'Memproses...' : 'Proses Pendaftaran'}
-                        </button>
-                    </div>
-                }
-            >
-                <form id="reg-form" onSubmit={handleSubmitRegistration} className="space-y-4">
-                    {/* 1. Pilih Pasien */}
-                    <div className="bg-zinc-50 p-3 rounded-lg border border-zinc-200/80 space-y-2">
-                        <label className="block text-xs font-semibold text-zinc-900">
-                            1. Identitas Pasien <span className="text-rose-500">*</span>
-                        </label>
+                services={services}
+                packages={packages}
+                companies={companies}
+                referrers={referrers}
+                referrerTypes={referrerTypes}
+                banks={banks}
+                onSuccess={(created) => {
+                    setIsCreateModalOpen(false);
+                    setSuccessRegistration(created);
+                }}
+            />
 
-                        {!selectedPatient ? (
-                            <div className="relative">
-                                <div className="relative">
-                                    <input
-                                        type="text"
-                                        value={patientSearch}
-                                        onChange={(e) => setPatientSearch(e.target.value)}
-                                        placeholder="Cari NRM, NIK, nama pasien..."
-                                        className="w-full pl-8 pr-3 py-1.5 text-xs rounded-md border border-zinc-300 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-900"
-                                    />
-                                    <Search className="w-4 h-4 text-zinc-400 absolute left-2.5 top-2" />
-                                </div>
-
-                                {isSearchingPatient && (
-                                    <p className="text-[11px] text-zinc-400 mt-1">Mencari database pasien...</p>
-                                )}
-
-                                {patientResults.length > 0 && (
-                                    <div className="absolute z-10 w-full mt-1 bg-white border border-zinc-200 rounded-md shadow-lg max-h-48 overflow-y-auto divide-y divide-zinc-100">
-                                        {patientResults.map((p) => (
-                                            <button
-                                                key={p.id}
-                                                type="button"
-                                                onClick={() => handleSelectPatient(p)}
-                                                className="w-full text-left p-2.5 hover:bg-zinc-50 flex items-center justify-between text-xs"
-                                            >
-                                                <div>
-                                                    <span className="font-semibold text-zinc-900">{p.name}</span>
-                                                    <span className="text-zinc-500 font-mono ml-2">({p.medical_record_no})</span>
-                                                    {p.nik && <span className="text-zinc-400 font-mono ml-2">NIK: {p.nik}</span>}
-                                                </div>
-                                                <span className="text-[11px] text-zinc-400">
-                                                    {p.gender === 'L' ? 'Laki-laki' : 'Perempuan'} • {p.age} thn
-                                                </span>
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        ) : (
-                            <div className="flex items-center justify-between bg-white p-2.5 rounded border border-zinc-200">
-                                <div>
-                                    <span className="font-semibold text-zinc-900 text-xs">{selectedPatient.name}</span>
-                                    <span className="text-zinc-500 font-mono text-xs ml-2">({selectedPatient.medical_record_no})</span>
-                                    <span className="text-[11px] text-zinc-400 block mt-0.5">
-                                        {selectedPatient.gender === 'L' ? 'Laki-laki' : 'Perempuan'} • {selectedPatient.age} thn • HP: {selectedPatient.phone || '—'}
-                                    </span>
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={() => setSelectedPatient(null)}
-                                    className="text-xs text-rose-600 hover:text-rose-800 font-medium"
-                                >
-                                    Ganti Pasien
-                                </button>
-                            </div>
-                        )}
-                        {regForm.errors.patient_id && (
-                            <p className="text-[11px] text-rose-500">{regForm.errors.patient_id}</p>
-                        )}
-                    </div>
-
-                    {/* 2. Jenis Layanan & Pembayar */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <div>
-                            <label className="block text-xs font-medium text-zinc-700 mb-1">
-                                Jenis Layanan <span className="text-rose-500">*</span>
-                            </label>
-                            <select
-                                value={regForm.data.service_type}
-                                onChange={(e) => regForm.setData('service_type', e.target.value as ServiceType)}
-                                className="w-full px-2.5 py-1.5 text-xs rounded-md border border-zinc-300 focus:outline-none focus:ring-1 focus:ring-zinc-900"
-                            >
-                                <option value="regular">Reguler / Non-MCU</option>
-                                <option value="mcu">Medical Check Up (MCU)</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label className="block text-xs font-medium text-zinc-700 mb-1">
-                                Tipe Pembayar <span className="text-rose-500">*</span>
-                            </label>
-                            <select
-                                value={regForm.data.payer_type}
-                                onChange={(e) => regForm.setData('payer_type', e.target.value as PayerType)}
-                                className="w-full px-2.5 py-1.5 text-xs rounded-md border border-zinc-300 focus:outline-none focus:ring-1 focus:ring-zinc-900"
-                            >
-                                <option value="aps">Pribadi / APS (Bayar Sendiri)</option>
-                                <option value="corporate">Corporate (Ditagihkan ke Klien)</option>
-                                <option value="referrer">Perujuk (Klaim Partner)</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label className="block text-xs font-medium text-zinc-700 mb-1">
-                                Perusahaan / Klien Korporat
-                            </label>
-                            <select
-                                value={regForm.data.company_id}
-                                onChange={(e) => regForm.setData('company_id', e.target.value)}
-                                className="w-full px-2.5 py-1.5 text-xs rounded-md border border-zinc-300 focus:outline-none focus:ring-1 focus:ring-zinc-900"
-                            >
-                                <option value="">— Non-Perusahaan —</option>
-                                {companies.map((c) => (
-                                    <option key={c.id} value={c.id}>
-                                        {c.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                    </div>
-
-                    {/* Jika MCU, pilih Event MCU & Paket */}
-                    {regForm.data.service_type === 'mcu' && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-3 bg-zinc-50 rounded-lg border border-zinc-200">
-                            <div>
-                                <label className="block text-xs font-medium text-zinc-700 mb-1">
-                                    Event MCU Korporat (Jika Ada)
-                                </label>
-                                <select
-                                    value={regForm.data.mcu_event_id}
-                                    onChange={(e) => regForm.setData('mcu_event_id', e.target.value)}
-                                    className="w-full px-2.5 py-1.5 text-xs rounded-md border border-zinc-300 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-900"
-                                >
-                                    <option value="">— Walk-in / Non Event —</option>
-                                    {mcuEvents.map((ev) => (
-                                        <option key={ev.id} value={ev.id}>
-                                            {ev.event_code} - {ev.event_name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <div>
-                                <label className="block text-xs font-medium text-zinc-700 mb-1">
-                                    Paket Pemeriksaan MCU
-                                </label>
-                                <select
-                                    value={regForm.data.package_id}
-                                    onChange={(e) => handlePackageChange(e.target.value)}
-                                    className="w-full px-2.5 py-1.5 text-xs rounded-md border border-zinc-300 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-900"
-                                >
-                                    <option value="">— Tanpa Paket (Item Satuan) —</option>
-                                    {packages.map((pkg) => (
-                                        <option key={pkg.id} value={pkg.id}>
-                                            {pkg.name} ({formatCurrency(pkg.final_price)})
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* 3. Pemeriksaan Tambahan (Add-On) & Split Billing */}
-                    <div className="space-y-2 border-t border-zinc-200 pt-3">
-                        <div className="flex items-center justify-between">
-                            <span className="text-xs font-semibold text-zinc-900">
-                                2. Pemeriksaan Tambahan / Add-On (Split Billing)
-                            </span>
-                            <div className="w-64">
-                                <select
-                                    onChange={(e) => {
-                                        handleAddAddonService(e.target.value);
-                                        e.target.value = '';
-                                    }}
-                                    className="w-full px-2 py-1 text-xs rounded border border-zinc-300 bg-white"
-                                >
-                                    <option value="">+ Tambah Layanan Satuan</option>
-                                    {services.map((s) => (
-                                        <option key={s.id} value={s.id}>
-                                            {s.name} ({formatCurrency(s.base_price)})
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                        </div>
-
-                        {regForm.data.additional_services.length === 0 ? (
-                            <p className="text-xs text-zinc-400 italic">
-                                Belum ada pemeriksaan tambahan. Pasien hanya akan menjalani item pemeriksaan dari paket di atas.
-                            </p>
-                        ) : (
-                            <div className="border border-zinc-200 rounded-md overflow-hidden">
-                                <table className="w-full text-left text-xs">
-                                    <thead className="bg-zinc-50 text-[11px] font-semibold text-zinc-600 uppercase">
-                                        <tr>
-                                            <th className="py-2 px-3">Layanan Pemeriksaan</th>
-                                            <th className="py-2 px-3 w-28 text-right">Tarif</th>
-                                            <th className="py-2 px-3 w-40 text-center">Ditagihkan Ke (Billed To)</th>
-                                            <th className="py-2 px-3 w-12 text-center">Aksi</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-zinc-200">
-                                        {regForm.data.additional_services.map((item, idx) => (
-                                            <tr key={item.service_id}>
-                                                <td className="py-2 px-3 font-medium text-zinc-800">
-                                                    {item.name}
-                                                </td>
-                                                <td className="py-2 px-3 text-right font-mono tabular-nums">
-                                                    {formatCurrency(item.price)}
-                                                </td>
-                                                <td className="py-2 px-3 text-center">
-                                                    <select
-                                                        value={item.billed_to}
-                                                        onChange={(e) => {
-                                                            const next = [...regForm.data.additional_services];
-                                                            next[idx].billed_to = e.target.value as BilledTo;
-                                                            regForm.setData('additional_services', next);
-                                                        }}
-                                                        className="px-2 py-0.5 text-xs rounded border border-zinc-300 bg-white"
-                                                    >
-                                                        <option value="personal">Pribadi (Pasien Bayar)</option>
-                                                        <option value="corporate">Perusahaan (Invoice Korporat)</option>
-                                                        <option value="referrer">Perujuk</option>
-                                                    </select>
-                                                </td>
-                                                <td className="py-2 px-3 text-center">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleRemoveAddon(idx)}
-                                                        className="p-1 text-rose-500 hover:text-rose-700"
-                                                    >
-                                                        <Trash2 className="w-3.5 h-3.5" />
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Ringkasan Split Billing & Pembayaran */}
-                    <div className="bg-zinc-50 p-3 rounded-lg border border-zinc-200 space-y-3">
-                        <div className="flex items-center justify-between text-xs pb-2 border-b border-zinc-200">
-                            <div>
-                                <span className="font-semibold text-zinc-800 block">Total Biaya Pemeriksaan:</span>
-                                <span className="text-[11px] text-zinc-500">
-                                    Paket: {formatCurrency(packagePrice)} • Add-on: {formatCurrency(addonsTotal)}
-                                </span>
-                            </div>
-                            <span className="text-base font-bold text-zinc-900 font-mono tabular-nums">
-                                {formatCurrency(grandTotal)}
-                            </span>
-                        </div>
-
-                        {/* Split Billing Badge Indicator */}
-                        <div className="grid grid-cols-2 gap-3 text-xs">
-                            <div className="bg-white p-2.5 rounded border border-zinc-200">
-                                <span className="text-[11px] text-zinc-500 block">Ditagihkan ke Perusahaan (Klien):</span>
-                                <span className="text-sm font-semibold text-zinc-900 font-mono tabular-nums">
-                                    {formatCurrency(corporateBill)}
-                                </span>
-                            </div>
-                            <div className="bg-white p-2.5 rounded border border-zinc-200">
-                                <span className="text-[11px] text-zinc-500 block">Ditagihkan ke Pasien (Pribadi/APS):</span>
-                                <span className="text-sm font-semibold text-zinc-900 font-mono tabular-nums">
-                                    {formatCurrency(personalBill)}
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* Input Pembayaran Kasir Pendaftaran */}
-                        {personalBill > 0 && (
-                            <div className="pt-2 border-t border-zinc-200 space-y-2">
-                                <span className="text-xs font-semibold text-zinc-800 block">
-                                    Pembayaran Kasir Saat Pendaftaran (Opsional)
-                                </span>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                    <div>
-                                        <label className="block text-[11px] font-medium text-zinc-600 mb-1">
-                                            Jumlah Bayar (Rp)
-                                        </label>
-                                        <input
-                                            type="number"
-                                            min={0}
-                                            value={regForm.data.payment.amount}
-                                            onChange={(e) =>
-                                                regForm.setData('payment', {
-                                                    ...regForm.data.payment,
-                                                    amount: Number(e.target.value),
-                                                })
-                                            }
-                                            placeholder="0"
-                                            className="w-full px-2.5 py-1 text-xs font-mono rounded border border-zinc-300 tabular-nums bg-white"
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-[11px] font-medium text-zinc-600 mb-1">
-                                            Metode Bayar
-                                        </label>
-                                        <select
-                                            value={regForm.data.payment.payment_method}
-                                            onChange={(e) =>
-                                                regForm.setData('payment', {
-                                                    ...regForm.data.payment,
-                                                    payment_method: e.target.value as PaymentMethod,
-                                                })
-                                            }
-                                            className="w-full px-2.5 py-1 text-xs rounded border border-zinc-300 bg-white"
-                                        >
-                                            <option value="cash">Tunai (Cash)</option>
-                                            <option value="qris">QRIS</option>
-                                            <option value="transfer">Transfer Bank</option>
-                                            <option value="edc">Kartu Debit / EDC</option>
-                                        </select>
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-[11px] font-medium text-zinc-600 mb-1">
-                                            Rekening Bank Klinik
-                                        </label>
-                                        <select
-                                            value={regForm.data.payment.bank_id}
-                                            onChange={(e) =>
-                                                regForm.setData('payment', {
-                                                    ...regForm.data.payment,
-                                                    bank_id: e.target.value,
-                                                })
-                                            }
-                                            className="w-full px-2.5 py-1 text-xs rounded border border-zinc-300 bg-white"
-                                        >
-                                            <option value="">— Kasir Utama —</option>
-                                            {banks.map((b) => (
-                                                <option key={b.id} value={b.id}>
-                                                    {b.name} ({b.account_number})
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </form>
-            </Modal>
+            {/* Modal: Sukses Pendaftaran & Cetak Langsung */}
+            <RegistrationSuccessModal
+                show={!!successRegistration}
+                onClose={() => setSuccessRegistration(null)}
+                registration={successRegistration}
+            />
 
             {/* ========================================================================= */}
             {/* Modal: Detail Pendaftaran & Split Billing Breakdown */}

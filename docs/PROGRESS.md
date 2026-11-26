@@ -31,6 +31,37 @@
 
 ---
 
+## Refactor R2: Integrasi Master Pemeriksaan & Event Tarif Paket
+- [x] **R2.1 — Pemisahan Master Pemeriksaan per Kategori:** Halaman individual untuk `Sampel`, `Laboratorium`, `Radiologi`, `Elektromedis`, `Pemeriksaan Fisik`, dan `Tarif Paket` dengan aksi cepat: Parameter, Ubah, dan Toggle Status (Aktif/Nonaktif).
+- [x] **R2.2 — Integrasi Event Tarif Paket & Dropdown Bertingkat:** Relasi event pada `packages` (`year`, `event_label`, `referrer_id`), integrasi form tambah event di Master Tarif Paket dengan auto-hitung total, diskon, dan tarif akhir. Form MCU Event terhubung dengan daftar event tarif paket.
+
+---
+
+## Refactor R3: Pendaftaran Peserta MCU Event & Pasien Biasa / APS (2 Pintu Operasional)
+- [x] **R3.1 — Database & Seeder Extension:**
+  - Migrasi `2026_11_25_160000_update_registrations_allow_pending_and_nullable_reg_no.php`: `reg_no` dan `registered_at` nullable untuk peserta MCU import yang berstatus `pending` (Belum Daftar).
+  - Seeder paket APS bertahun di `database/seeders/ServicePackageSeeder.php` (2024: MCU K3 Standar/Plus/Lengkap; 2026: Haji, Emerald, Sekolah, Pra Nikah).
+- [x] **R3.2 — BAGIAN A (Jalur MCU Event & Check-In Lapangan):**
+  - Dropdown `Aksi` -> `Import Pasien` di `Data MCU -> MCU` membuka tabel peserta per event `Data Pasien MCU`.
+  - Header: tombol `Import Excel`, `Unduh Template`, dan `Tambah Data`.
+  - Kolom tabel: `No`, `Aksi`, `No. Registrasi`, `NIK`, `Nama`, `Tgl Lahir`, `JK`, `Bagian`, `Paket`, `Status` (`Belum Daftar` / `Terdaftar`).
+  - Dropdown 7 Aksi: `Daftar`, `Label Lab`, `Label Non Lab`, `Cetak Kartu`, `Cetak Kartu Kontrol`, `Ubah`, `Hapus`.
+  - Modal `Form Daftar`: `Event MCU` (readonly), `Tanggal` (date picker), `Foto` (live webcam capture + file fallback), `Paket` (dropdown paket event), tombol `Daftar`.
+  - Atomic transaction saat daftar: simpan foto, generate `reg_no`, unpack paket ke `registration_items`, status `registered`. Modal `QuickPrint` otomatis muncul untuk cetak **Kartu Kontrol** dan **Label Non Lab**.
+- [x] **R3.3 — BAGIAN B (Jalur Pasien Biasa & APS MCU 1 Pintu):**
+  - Modular komponen di `resources/js/Pages/Registrations/Components/`:
+    - `NewPatientModal.tsx`: modal cepat pendaftaran pasien baru sesuai KTP tanpa berpindah halaman.
+    - `RegistrationSuccessModal.tsx`: dialog sukses pendaftaran dengan 3 tombol cetak langsung: **Cetak Kwitansi**, **Cetak Label Lab**, dan **Cetak Kartu Kontrol**.
+    - `RegistrationWizardModal.tsx`: wizard 4 langkah (Langkah 1: Pasien + Autocomplete, Langkah 2: Perujuk, Langkah 3: Pemeriksaan dengan Tab Satuan & Tab Paket berjenjang Tahun -> Event -> Paket + Keranjang, Langkah 4: Pembayaran & Cek Ulang).
+  - Print template kwitansi `resources/views/prints/receipt.blade.php` & controller `PrintLabelController@receipt` lengkap dengan rincian biaya, terbilang rupiah, barcode, metode bayar, dan tanda tangan kasir/pasien.
+  - Dropdown aksi tabel pendaftaran dilengkapi `Cetak Kwitansi`, `Cetak Label`, dan `Cetak Kartu Kontrol`.
+- [x] **R3.4 — Verifikasi Kualitas:**
+  - `npm run build` sukses 100% tanpa error TS.
+  - `McuParticipantTest` (5/5 passed, 17 assertions).
+  - `RegistrationTest` (8/8 passed, 88 assertions).
+
+---
+
 ## Phase 1: Foundation, Auth, RBAC Checklist & Core Layout
 - [x] **1A — Project Bootstrap & Core Packages:** Setup Laravel 11/12 + Inertia React TS + Tailwind, install `spatie/laravel-permission`, `spatie/laravel-activitylog`, `@tanstack/react-table`, `@tanstack/react-virtual`, `framer-motion`, `lucide-react`. Create migrations & models for Domain A & B (`employees`, `users`, `user_sample_scopes`, `clinic_settings`), `HasAuditColumns` trait, and initial `DatabaseSeeder`.
 - [x] **1B — Minimalist Shell & Reusable `<DataTable />`:** Build collapsible Sidebar (dynamic menu filtered by RBAC, toggle next to brand), Topbar, Toast/Modal primitives, and reusable server-side `<DataTable />` (10/20/50/100/300/500 entries, TanStack Virtual >= 100, Smart URL sync, sticky header, `tabular-nums`, unified `Aksi` dropdown), Auth Login/Logout (username/email, `is_active` check, `last_login_at`), and `Dashboard.tsx`.

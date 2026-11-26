@@ -99,11 +99,12 @@ class RegistrationController extends Controller
             ->withQueryString();
 
         $companies = Company::where('is_active', true)->orderBy('name')->get(['id', 'name']);
-        $referrers = Referrer::where('is_active', true)->orderBy('name')->get(['id', 'name']);
+        $referrers = Referrer::where('is_active', true)->orderBy('name')->get(['id', 'name', 'referrer_type_id']);
+        $referrerTypes = \App\Models\ReferrerType::where('is_active', true)->orderBy('name')->get(['id', 'name', 'code']);
         $packages = Package::where('is_active', true)
             ->with(['packageItems.service'])
             ->orderBy('name')
-            ->get(['id', 'name', 'total_price', 'discount_amount', 'final_price']);
+            ->get(['id', 'name', 'year', 'event_label', 'referrer_id', 'total_price', 'discount_amount', 'final_price']);
         $services = Service::where('is_active', true)
             ->orderBy('category')
             ->orderBy('name')
@@ -118,6 +119,7 @@ class RegistrationController extends Controller
             'registrations' => $registrations,
             'companies' => $companies,
             'referrers' => $referrers,
+            'referrerTypes' => $referrerTypes,
             'packages' => $packages,
             'services' => $services,
             'mcuEvents' => $mcuEvents,
@@ -144,6 +146,13 @@ class RegistrationController extends Controller
     public function store(StoreRegistrationRequest $request, RegisterPatientAction $action): RedirectResponse
     {
         $registration = $action->execute($request->validated(), $request->user()->id);
+
+        session()->flash('created_registration', [
+            'id' => $registration->id,
+            'reg_no' => $registration->reg_no,
+            'patient_name' => $registration->patient->name,
+            'grand_total' => $registration->grand_total,
+        ]);
 
         return redirect()->back()->with('success', "Pendaftaran {$registration->reg_no} untuk pasien {$registration->patient->name} berhasil diproses.");
     }

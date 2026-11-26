@@ -49,6 +49,7 @@ class HandleInertiaRequests extends Middleware
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
                 'info' => fn () => $request->session()->get('info'),
+                'created_registration' => fn () => $request->session()->get('created_registration'),
             ],
             'clinicSetting' => function () {
                 try {

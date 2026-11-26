@@ -338,4 +338,53 @@ class RegistrationTest extends TestCase
         $registration->refresh();
         $this->assertEquals('completed', $registration->workflow_status);
     }
+
+    // ==========================================
+    // 7. Receipt Print & Patient Quick Store / Search
+    // ==========================================
+
+    public function test_receipt_can_be_rendered(): void
+    {
+        $registration = Registration::create([
+            'patient_id' => $this->patient->id,
+            'service_type' => 'regular',
+            'payer_type' => 'aps',
+            'workflow_status' => 'registered',
+            'grand_total' => 150000,
+            'paid_amount' => 150000,
+            'payment_status' => 'paid',
+        ]);
+
+        $response = $this->actingAs($this->admin)->get("/registrations/{$registration->id}/receipt");
+        $response->assertStatus(200);
+        $response->assertSee('KWITANSI PEMBAYARAN');
+        $response->assertSee($this->patient->name);
+    }
+
+    public function test_patient_search_and_quick_store(): void
+    {
+        // 1. Search existing patient
+        $searchRes = $this->actingAs($this->admin)->get('/patients/search?q=' . substr($this->patient->name, 0, 4));
+        $searchRes->assertStatus(200);
+        $searchRes->assertJsonFragment(['name' => $this->patient->name]);
+
+        // 2. Quick create new patient
+        $quickRes = $this->actingAs($this->admin)->postJson('/patients/quick', [
+            'name' => 'Budi Santoso Walkin',
+            'nik' => '3201019901010099',
+            'gender' => 'L',
+            'birth_date' => '1995-05-15',
+            'phone' => '081234567899',
+            'default_department' => 'Produksi',
+            'address' => 'Jl. Merdeka No. 45',
+        ]);
+        $quickRes->assertStatus(200);
+        $quickRes->assertJsonPath('success', true);
+        $quickRes->assertJsonPath('patient.name', 'Budi Santoso Walkin');
+
+        $this->assertDatabaseHas('patients', [
+            'name' => 'Budi Santoso Walkin',
+            'nik' => '3201019901010099',
+        ]);
+    }
 }
